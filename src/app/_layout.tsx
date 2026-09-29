@@ -55,6 +55,8 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="product/[id]" />
             <Stack.Screen name="cart" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="checkout" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="orders" options={{ animation: "slide_from_right" }} />
             <Stack.Screen name="reader/[id]" options={{ animation: "slide_from_right" }} />
             <Stack.Screen name="player/[id]" options={{ animation: "slide_from_right" }} />
           </Stack>

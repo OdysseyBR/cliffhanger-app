@@ -205,7 +205,12 @@ export default function CartScreen() {
         </View>
 
         <View style={{ gap: 10, marginTop: 8 }}>
-          <Button label="Continuar comprando" onPress={() => router.replace("/shop")} />
+          <Button label="Finalizar compra" onPress={() => router.push("/checkout")} />
+          <Button
+            label="Continuar comprando"
+            variant="secondary"
+            onPress={() => router.replace("/shop")}
+          />
         </View>
       </View>
     </Screen>

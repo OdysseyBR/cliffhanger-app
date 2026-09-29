@@ -16,6 +16,7 @@ interface FieldProps {
   keyboardType?: KeyboardTypeOptions;
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   autoComplete?: "email" | "password" | "name" | "off";
+  maxLength?: number;
   error?: string | null;
 }
 
@@ -28,6 +29,7 @@ export function Field({
   keyboardType,
   autoCapitalize = "sentences",
   autoComplete = "off",
+  maxLength,
   error,
 }: FieldProps) {
   const [visible, setVisible] = useState(!secure);
@@ -65,6 +67,7 @@ export function Field({
           autoCapitalize={autoCapitalize}
           autoCorrect={false}
           autoComplete={autoComplete}
+          maxLength={maxLength}
           style={{
             flex: 1,
             minHeight: 48,

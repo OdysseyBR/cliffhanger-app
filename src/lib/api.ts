@@ -1,9 +1,21 @@
 /**
  * Cliente da API pública da Cliffhanger Store (mesmo backend do site).
- * Endpoints usados pelo app: /api/products (catálogo) e /api/library (sessão).
+ * Endpoints: /api/products (catálogo), /api/library (sessão/progresso) e o
+ * checkout — /api/shipping, /api/coupons/validate, /api/orders,
+ * /api/orders/mine e /api/account/addresses.
  */
 import { STORE_URL } from "./firebase";
-import type { Catalog, LibraryData, ReadingProgress } from "./types";
+import type {
+  Catalog,
+  CheckoutPayload,
+  CouponValidation,
+  LibraryData,
+  Order,
+  OrderCreated,
+  ReadingProgress,
+  SavedAddress,
+  ShippingQuote,
+} from "./types";
 
 export class ApiError extends Error {
   status: number;
@@ -14,14 +26,26 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, token?: string): Promise<T> {
+interface RequestOptions {
+  token?: string;
+  method?: "GET" | "POST" | "PUT";
+  body?: unknown;
+}
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const { token, method = "GET", body } = options;
   if (!STORE_URL) {
     throw new ApiError("Loja não configurada (EXPO_PUBLIC_STORE_URL ausente no .env).");
   }
   let res: Response;
   try {
     res = await fetch(`${STORE_URL}${path}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      method,
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+      },
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     });
   } catch {
     throw new ApiError("Sem conexão com a loja. Verifique sua internet.");
@@ -89,7 +113,7 @@ export function loadCatalog(force = false): Promise<Catalog> {
 // ---------------------------------------------------------------------------
 
 export function loadLibrary(token: string): Promise<LibraryData> {
-  return request<LibraryData>("/api/library", token);
+  return request<LibraryData>("/api/library", { token });
 }
 
 /**
@@ -126,4 +150,43 @@ export async function saveProgress(
   } catch {
     return false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Checkout (Lote 2 Etapa 2 — §7.2–§7.6)
+// ---------------------------------------------------------------------------
+
+/** Frete por CEP (POST /api/shipping) — Bearer opcional (Cliffhanger+). */
+export function quoteShipping(
+  token: string | null,
+  payload: { cep: string; itemCount: number; subtotal: number },
+): Promise<ShippingQuote> {
+  return request<ShippingQuote>("/api/shipping", {
+    method: "POST",
+    body: payload,
+    token: token ?? undefined,
+  });
+}
+
+/** Valida cupom (POST /api/coupons/validate) — pública e somente leitura. */
+export function validateCoupon(code: string, subtotal: number): Promise<CouponValidation> {
+  return request<CouponValidation>("/api/coupons/validate", {
+    method: "POST",
+    body: { code, subtotal },
+  });
+}
+
+/** Cria o pedido (POST /api/orders) — Bearer opcional (compra de visitante). */
+export function createOrder(payload: CheckoutPayload, token?: string): Promise<OrderCreated> {
+  return request<OrderCreated>("/api/orders", { method: "POST", body: payload, token });
+}
+
+/** Histórico de pedidos do cliente logado (GET /api/orders/mine). */
+export function loadOrders(token: string): Promise<{ orders: Order[] }> {
+  return request<{ orders: Order[] }>("/api/orders/mine", { token });
+}
+
+/** Endereços salvos da conta — pré-preenchimento do checkout (§7.2). */
+export function loadSavedAddresses(token: string): Promise<{ addresses: SavedAddress[] }> {
+  return request<{ addresses: SavedAddress[] }>("/api/account/addresses", { token });
 }

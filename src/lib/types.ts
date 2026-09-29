@@ -158,3 +158,134 @@ export interface CartItem {
   productId: string;
   qty: number;
 }
+
+// ---------------------------------------------------------------------------
+// Checkout e pedidos (Lote 2 — Doc Mestre §7.2–§7.6)
+// ---------------------------------------------------------------------------
+
+export type PaymentMethod = "pix" | "credito" | "debito";
+
+/** Modalidade de envio devolvida por POST /api/shipping. */
+export interface ShippingOption {
+  id: "standard" | "express";
+  label: string;
+  price: number;
+  free: boolean;
+  daysMin: number;
+  daysMax: number;
+}
+
+/** Resposta de POST /api/shipping. */
+export interface ShippingQuote {
+  ok: true;
+  cep: string;
+  state: string | null;
+  region: string;
+  regionLabel: string;
+  freeShippingFrom: number;
+  options: ShippingOption[];
+  plusFree: boolean;
+}
+
+/** Resposta de POST /api/coupons/validate. */
+export interface CouponValidation {
+  ok: true;
+  discount: number;
+  coupon: { code: string; type: "percent" | "fixed"; value: number; description?: string };
+}
+
+export interface OrderAddress {
+  cep: string;
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+}
+
+/** §17 — opção de presente no checkout. */
+export interface OrderGift {
+  to: string;
+  message: string;
+  wrap: boolean;
+}
+
+/** Body de POST /api/orders — frete e cupom são recalculados no servidor. */
+export interface CheckoutPayload {
+  items: { productId: string; qty: number }[];
+  email: string;
+  name?: string;
+  phone?: string;
+  address?: OrderAddress;
+  paymentMethod: PaymentMethod;
+  shippingOption?: "standard" | "express";
+  coupon?: string;
+  gift?: OrderGift;
+}
+
+export type OrderStatus =
+  | "aguardando_pagamento"
+  | "pagamento_aprovado"
+  | "em_separacao"
+  | "enviado"
+  | "entregue"
+  | "cancelado";
+
+export interface OrderItem {
+  productId: string;
+  title: string;
+  price: number;
+  qty: number;
+  digital: boolean;
+  preOrder?: boolean;
+}
+
+/** Pedido como devolve GET /api/orders/mine. */
+export interface Order {
+  id: string;
+  code: string;
+  userId?: string;
+  email: string;
+  items: OrderItem[];
+  subtotal: number;
+  shipping: number;
+  total: number;
+  paymentMethod: PaymentMethod;
+  status: OrderStatus;
+  createdAt: string;
+  couponCode?: string | null;
+  discount?: number;
+  gift?: OrderGift | null;
+  address?: OrderAddress | null;
+  customer?: { name: string; phone: string } | null;
+  updatedAt?: string;
+}
+
+/** Resposta de POST /api/orders. */
+export interface OrderCreated {
+  ok: true;
+  orderId: string;
+  code: string;
+  total: number;
+  shipping: number;
+  plusFree: boolean;
+  discount: number;
+  gift: boolean;
+  digitalItems: string[];
+  persisted: boolean;
+  status: OrderStatus;
+}
+
+/** Endereço salvo da conta (GET /api/account/addresses) — só o que usamos. */
+export interface SavedAddress {
+  id: string;
+  cep: string;
+  state: string;
+  city: string;
+  district: string;
+  street: string;
+  number: string;
+  complement?: string;
+  isDefault: boolean;
+}
