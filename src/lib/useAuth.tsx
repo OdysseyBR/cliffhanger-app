@@ -26,6 +26,7 @@ import {
 
 import { auth } from "./auth";
 import { firebaseEnabled } from "./firebase";
+import { removePushToken } from "./notificationsStore";
 import { readWishlist, writeWishlist } from "./wishlist";
 
 export interface AuthUser {
@@ -225,6 +226,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logOut = useCallback(async () => {
     if (!auth) return;
     try {
+      // remove o token push deste dispositivo ANTES de encerrar a sessão
+      // (a escrita no Firestore precisa do usuário ainda autenticado)
+      const uid = auth.currentUser?.uid;
+      if (uid) await removePushToken(uid);
       await signOut(auth);
     } catch {
       /* sessão já encerrada */

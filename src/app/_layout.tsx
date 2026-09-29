@@ -13,6 +13,7 @@ import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { Colors } from "@/constants/theme";
+import { NotificationsBridge } from "@/components/NotificationsBridge";
 import { AuthProvider } from "@/lib/useAuth";
 import { CartProvider } from "@/lib/useCart";
 
@@ -57,9 +58,11 @@ export default function RootLayout() {
             <Stack.Screen name="cart" options={{ animation: "slide_from_right" }} />
             <Stack.Screen name="checkout" options={{ animation: "slide_from_right" }} />
             <Stack.Screen name="orders" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="notifications" options={{ animation: "slide_from_right" }} />
             <Stack.Screen name="reader/[id]" options={{ animation: "slide_from_right" }} />
             <Stack.Screen name="player/[id]" options={{ animation: "slide_from_right" }} />
           </Stack>
+          <NotificationsBridge />
         </CartProvider>
       </AuthProvider>
     </SafeAreaProvider>

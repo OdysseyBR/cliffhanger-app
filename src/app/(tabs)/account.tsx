@@ -136,6 +136,35 @@ export default function AccountScreen() {
             <Ionicons name="chevron-forward" size={18} color={Colors.textFaint} />
           </Pressable>
 
+          <Pressable
+            onPress={() => router.push("/notifications")}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              {
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                padding: 14,
+                borderRadius: Radius.md,
+                backgroundColor: Colors.surface,
+                borderWidth: 1,
+                borderColor: Colors.border,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <Ionicons name="notifications-outline" size={20} color={Colors.accent} />
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={{ fontFamily: Fonts.bodySemi, fontSize: 14, color: Colors.text }}>
+                Notificações
+              </Text>
+              <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.textMuted }}>
+                Avisos de pedidos, lançamentos e promoções.
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={Colors.textFaint} />
+          </Pressable>
+
           <View style={{ gap: 10 }}>
             <Button
               label="Ver minha biblioteca"
