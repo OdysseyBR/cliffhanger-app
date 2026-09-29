@@ -5,7 +5,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { BookCover } from "@/components/BookCover";
 import { EmptyState } from "@/components/EmptyState";
@@ -36,18 +36,23 @@ function LibraryRow({
   const product = products.find((p) => p.id === item.productId);
   const percent = progress[item.productId]?.percent ?? 0;
   const purchased = formatDate(item.purchasedAt);
+  const open = item.type === "audiobook" ? "/player/[id]" : "/reader/[id]";
 
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        gap: 12,
-        padding: 12,
-        borderRadius: Radius.md,
-        backgroundColor: Colors.surface,
-        borderWidth: 1,
-        borderColor: Colors.border,
-      }}
+    <Pressable
+      onPress={() => router.push({ pathname: open, params: { id: item.productId } })}
+      style={({ pressed }) => [
+        {
+          flexDirection: "row",
+          gap: 12,
+          padding: 12,
+          borderRadius: Radius.md,
+          backgroundColor: Colors.surface,
+          borderWidth: 1,
+          borderColor: Colors.border,
+          opacity: pressed ? 0.75 : 1,
+        },
+      ]}
     >
       <View
         style={{
@@ -111,7 +116,7 @@ function LibraryRow({
           </View>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

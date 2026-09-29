@@ -1,6 +1,7 @@
 /**
  * Layout raiz — fontes da identidade (Bebas Neue + Barlow), provedores de
- * sessão/carrinho e pilha de rotas (abas + produto + carrinho).
+ * sessão/carrinho e pilha de rotas (abas + produto + carrinho + leitor +
+ * player de audiobook).
  */
 import { Barlow_400Regular, Barlow_500Medium, Barlow_600SemiBold, Barlow_700Bold } from "@expo-google-fonts/barlow";
 import { BebasNeue_400Regular } from "@expo-google-fonts/bebas-neue";
@@ -54,6 +55,8 @@ export default function RootLayout() {
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="product/[id]" />
             <Stack.Screen name="cart" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="reader/[id]" options={{ animation: "slide_from_right" }} />
+            <Stack.Screen name="player/[id]" options={{ animation: "slide_from_right" }} />
           </Stack>
         </CartProvider>
       </AuthProvider>

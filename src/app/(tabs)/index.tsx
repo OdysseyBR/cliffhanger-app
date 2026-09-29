@@ -91,7 +91,16 @@ function LibraryRailCard({
   const percent = progress[item.productId]?.percent ?? 0;
 
   return (
-    <View style={{ width: 150 }}>
+    <Pressable
+      onPress={() =>
+        router.push({
+          pathname: item.type === "audiobook" ? "/player/[id]" : "/reader/[id]",
+          params: { id: item.productId },
+        })
+      }
+      style={({ pressed }) => [{ width: 150, opacity: pressed ? 0.85 : 1 }]}
+      accessibilityLabel={item.title}
+    >
       <View
         style={{
           aspectRatio: 2 / 3,
@@ -146,7 +155,7 @@ function LibraryRailCard({
           {percent > 0 ? `${percent}% concluído` : "Não iniciado"}
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

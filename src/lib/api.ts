@@ -3,7 +3,7 @@
  * Endpoints usados pelo app: /api/products (catálogo) e /api/library (sessão).
  */
 import { STORE_URL } from "./firebase";
-import type { Catalog, LibraryData } from "./types";
+import type { Catalog, LibraryData, ReadingProgress } from "./types";
 
 export class ApiError extends Error {
   status: number;
@@ -48,6 +48,17 @@ const CATALOG_TTL_MS = 5 * 60_000;
 let catalogCache: { data: Catalog; at: number } | null = null;
 let catalogInflight: Promise<Catalog> | null = null;
 
+/**
+ * URL absoluta de arquivo digital (aceita caminhos relativos colados no
+ * admin). O leitor/player carrega o arquivo direto do host — os arquivos
+ * da loja são do Cloudinary, que envia CORS para qualquer origem.
+ */
+export function resolveFileUrl(url: string): string {
+  if (/^https?:\/\//i.test(url)) return url;
+  if (!STORE_URL) return url;
+  return `${STORE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
 /** Catálogo em cache (sem ir à rede), se já carregado. */
 export function peekCatalog(): Catalog | null {
   if (catalogCache && Date.now() - catalogCache.at < CATALOG_TTL_MS) {
@@ -79,4 +90,40 @@ export function loadCatalog(force = false): Promise<Catalog> {
 
 export function loadLibrary(token: string): Promise<LibraryData> {
   return request<LibraryData>("/api/library", token);
+}
+
+/**
+ * Salva progresso/última posição (PUT /api/library/progress/{productId}).
+ * Mesmo contrato do site: o PUT substitui o documento do produto na conta.
+ * Retorna false em falha (melhor esforço — o estado local continua válido).
+ */
+export async function saveProgress(
+  token: string,
+  productId: string,
+  patch: {
+    kind: "ebook" | "audiobook";
+    page?: number;
+    pages?: number;
+    percent: number;
+    position?: number;
+    bookmarks?: ReadingProgress["bookmarks"];
+  },
+): Promise<boolean> {
+  if (!STORE_URL) return false;
+  try {
+    const res = await fetch(
+      `${STORE_URL}/api/library/progress/${encodeURIComponent(productId)}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(patch),
+      },
+    );
+    return res.ok;
+  } catch {
+    return false;
+  }
 }
