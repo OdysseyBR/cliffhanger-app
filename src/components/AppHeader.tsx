@@ -14,11 +14,18 @@ import { useCart } from "@/lib/useCart";
 interface AppHeaderProps {
   /** título da subpágina — mostra botão de volta no lugar do wordmark */
   title?: string;
+  /** esconde marca/carrinho (tela de login) — mantém só a área segura do topo */
+  hidden?: boolean;
 }
 
-export function AppHeader({ title }: AppHeaderProps) {
+export function AppHeader({ title, hidden }: AppHeaderProps) {
   const insets = useSafeAreaInsets();
   const { count } = useCart();
+
+  if (hidden) {
+    /* sem barra: só o respiro da status bar para o conteúdo não passar por baixo */
+    return <View style={{ paddingTop: insets.top, backgroundColor: Colors.background }} />;
+  }
 
   return (
     <View

@@ -21,6 +21,8 @@ interface ScreenProps {
   children: ReactNode;
   /** título da subpágina — mostra botão de volta no lugar da marca */
   title?: string;
+  /** esconde o header no topo (ex.: tela de login) */
+  hideHeader?: boolean;
   scroll?: boolean;
   onRefresh?: () => Promise<void>;
   refreshing?: boolean;
@@ -30,12 +32,13 @@ interface ScreenProps {
 export function Screen({
   children,
   title,
+  hideHeader,
   scroll = true,
   onRefresh,
   refreshing = false,
   contentStyle,
 }: ScreenProps) {
-  const header = <AppHeader title={title} />;
+  const header = <AppHeader title={title} hidden={hideHeader} />;
 
   if (!scroll) {
     return (

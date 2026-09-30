@@ -5,12 +5,13 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
 import { Loading, Screen } from "@/components/Screen";
 import { Segmented } from "@/components/Segmented";
+import { Wordmark } from "@/components/Wordmark";
 import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
 import { useAuth } from "@/lib/useAuth";
 
@@ -215,13 +216,10 @@ export default function AccountScreen() {
   };
 
   return (
-    <Screen contentStyle={{ paddingTop: 16 }}>
-      <Image
-        source={require("../../../assets/images/logo-wordmark.png")}
-        accessibilityLabel="Cliffhanger Store"
-        style={{ width: 244, height: 66, alignSelf: "center", marginBottom: 14 }}
-        resizeMode="contain"
-      />
+    <Screen hideHeader contentStyle={{ paddingTop: 24 }}>
+      <View style={{ alignSelf: "center", marginBottom: 14 }}>
+        <Wordmark height={40} accessibilityLabel="Cliffhanger Store" />
+      </View>
       <Text
         style={{
           paddingHorizontal: ScreenPadding,
