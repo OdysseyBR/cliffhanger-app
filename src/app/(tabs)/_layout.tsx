@@ -1,29 +1,19 @@
 /**
  * Navegação inferior (Documento Mestre §10.1):
- * Início | Loja | Buscar | Biblioteca | Conta — carrinho no topo (Screen).
+ * Início | Loja | Buscar | Biblioteca | Conta — carrinho no topo (AppHeader).
+ * A barra em si é o componente TabBar (identidade visual).
  */
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router/js-tabs";
 
-import { Colors, Fonts } from "@/constants/theme";
+import { TabBar } from "@/components/TabBar";
 
 export default function TabsLayout() {
   return (
     <Tabs
+      tabBar={(props) => <TabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: Colors.accent,
-        tabBarInactiveTintColor: "#F8FEFF99",
-        tabBarStyle: {
-          backgroundColor: Colors.background,
-          borderTopColor: Colors.border,
-          borderTopWidth: 1,
-        },
-        tabBarLabelStyle: {
-          fontFamily: Fonts.bodyMedium,
-          fontSize: 11,
-          letterSpacing: 0.4,
-        },
       }}
     >
       <Tabs.Screen

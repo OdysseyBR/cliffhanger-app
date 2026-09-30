@@ -1,6 +1,6 @@
 /**
- * Estado vazio/erro com ícone monocrômico, mensagem e ação opcional
- * (critério de conclusão: estados vazios/erro tratados).
+ * Estado vazio/erro: badge circular com ícone monocrômico, mensagem e ação
+ * opcional (critério de conclusão: estados vazios/erro tratados).
  */
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
@@ -35,7 +35,21 @@ export function EmptyState({
         paddingHorizontal: 24,
       }}
     >
-      <Ionicons name={icon} size={compact ? 28 : 40} color={Colors.textFaint} />
+      <View
+        style={{
+          width: compact ? 56 : 72,
+          height: compact ? 56 : 72,
+          borderRadius: 999,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: Colors.surface,
+          borderWidth: 1,
+          borderColor: Colors.border,
+          marginBottom: 4,
+        }}
+      >
+        <Ionicons name={icon} size={compact ? 24 : 32} color={Colors.accent} />
+      </View>
       <Text
         style={{
           fontFamily: Fonts.bodySemi,
@@ -63,15 +77,15 @@ export function EmptyState({
       {actionLabel && onAction ? (
         <Pressable
           onPress={onAction}
+          accessibilityRole="button"
           style={({ pressed }) => [
             {
               marginTop: 8,
-              paddingHorizontal: 20,
-              paddingVertical: 10,
+              paddingHorizontal: 22,
+              paddingVertical: 11,
               borderRadius: Radius.pill,
-              borderWidth: 1,
-              borderColor: Colors.accent,
-              opacity: pressed ? 0.7 : 1,
+              backgroundColor: Colors.accent,
+              opacity: pressed ? 0.8 : 1,
             },
           ]}
         >
@@ -80,7 +94,7 @@ export function EmptyState({
               fontFamily: Fonts.bodyBold,
               fontSize: 13,
               letterSpacing: 0.6,
-              color: Colors.accent,
+              color: Colors.onAccent,
             }}
           >
             {actionLabel}

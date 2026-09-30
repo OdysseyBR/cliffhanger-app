@@ -1,7 +1,8 @@
 /**
  * Home do app — Documento Mestre §10.2:
- * Continue lendo · Continue ouvindo · Recomendado para você · Novidades ·
- * Seus universos · Wishlist · Próximos lançamentos.
+ * Hero (banner ativo do painel) · Atalhos de categoria · Continue lendo ·
+ * Continue ouvindo · Recomendado para você · Novidades · Seus universos ·
+ * Wishlist · Próximos lançamentos.
  *
  * Visitante vê um convite de conta única + as seções públicas; na sessão,
  * entram biblioteca (progresso real) e wishlist.
@@ -14,8 +15,10 @@ import { Pressable, Text, View } from "react-native";
 import { BookCover } from "@/components/BookCover";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
+import { HeroBanner } from "@/components/HeroBanner";
 import { ProductCard } from "@/components/ProductCard";
 import { ProgressBar } from "@/components/ProgressBar";
+import { QuickLinks } from "@/components/QuickLinks";
 import { Rail } from "@/components/Rail";
 import { Loading, Screen } from "@/components/Screen";
 import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
@@ -347,7 +350,9 @@ export default function HomeScreen() {
   const audios = items.filter((i) => i.type === "audiobook");
 
   return (
-    <Screen onRefresh={onRefresh} refreshing={refreshing} contentStyle={{ paddingTop: 16 }}>
+    <Screen onRefresh={onRefresh} refreshing={refreshing} contentStyle={{ paddingTop: 8 }}>
+      <HeroBanner />
+      <QuickLinks />
       {!user ? <InviteCard /> : null}
 
       {user ? (

@@ -1,7 +1,10 @@
 /**
- * Loja — grade do catálogo com filtros de categoria.
+ * Loja — grade do catálogo com filtros de categoria. O filtro é derivado de
+ * `?filter=` (fonte única): os atalhos da home chegam via params e os chips
+ * atualizam os params da própria rota.
  */
-import { useMemo, useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useMemo } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
@@ -14,9 +17,27 @@ import { useCatalog } from "@/lib/useCatalog";
 
 type Filter = ProductCategory | "todos";
 
+const VALID_FILTERS = new Set<string>([
+  "todos",
+  "livros",
+  "ebooks",
+  "audiobooks",
+  "produtos",
+  "colecionaveis",
+]);
+
+function normalizeFilter(value: string | string[] | undefined): Filter {
+  const v = Array.isArray(value) ? value[0] : value;
+  return v && VALID_FILTERS.has(v) ? (v as Filter) : "todos";
+}
+
 export default function ShopScreen() {
+  const params = useLocalSearchParams<{ filter?: string }>();
   const { catalog, loading, error, reload } = useCatalog();
-  const [filter, setFilter] = useState<Filter>("todos");
+  const filter = normalizeFilter(params.filter);
+  const selectFilter = (value: Filter) => {
+    void router.setParams({ filter: value });
+  };
 
   const categories = useMemo(() => {
     if (!catalog) return [] as { value: Filter; label: string; count: number }[];
@@ -79,13 +100,13 @@ export default function ShopScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: 8, paddingHorizontal: ScreenPadding }}
         >
-          <Chip label={`Todos (${products.length})`} active={filter === "todos"} onPress={() => setFilter("todos")} />
+          <Chip label={`Todos (${products.length})`} active={filter === "todos"} onPress={() => selectFilter("todos")} />
           {categories.map((category) => (
             <Chip
               key={category.value}
               label={`${category.label} (${category.count})`}
               active={filter === category.value}
-              onPress={() => setFilter(category.value)}
+              onPress={() => selectFilter(category.value)}
             />
           ))}
         </ScrollView>

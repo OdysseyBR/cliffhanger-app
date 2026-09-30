@@ -32,17 +32,17 @@ export function Button({
       accessibilityRole="button"
       style={({ pressed }) => [
         {
-          minHeight: 48,
+          minHeight: 50,
           borderRadius: Radius.md,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
           gap: 8,
           paddingHorizontal: 20,
-          backgroundColor: primary ? Colors.accent : "transparent",
+          backgroundColor: primary ? Colors.accent : Colors.surface,
           borderWidth: primary ? 0 : 1,
-          borderColor: Colors.primary,
-          opacity: inactive ? 0.55 : pressed ? 0.8 : 1,
+          borderColor: primary ? Colors.accent : Colors.primary,
+          opacity: inactive ? 0.55 : pressed ? 0.85 : 1,
         },
         style,
       ]}

@@ -33,6 +33,7 @@ export function Field({
   error,
 }: FieldProps) {
   const [visible, setVisible] = useState(!secure);
+  const [focused, setFocused] = useState(false);
 
   return (
     <View style={{ gap: 6 }}>
@@ -41,7 +42,7 @@ export function Field({
           fontFamily: Fonts.bodyMedium,
           fontSize: 11,
           letterSpacing: 1.4,
-          color: Colors.textMuted,
+          color: focused ? Colors.accent : Colors.textMuted,
           textTransform: "uppercase",
         }}
       >
@@ -53,7 +54,7 @@ export function Field({
           alignItems: "center",
           backgroundColor: Colors.surfaceAlt,
           borderWidth: 1,
-          borderColor: error ? Colors.warning : Colors.border,
+          borderColor: error ? Colors.warning : focused ? Colors.accent : Colors.border,
           borderRadius: Radius.sm,
         }}
       >
@@ -68,6 +69,8 @@ export function Field({
           autoCorrect={false}
           autoComplete={autoComplete}
           maxLength={maxLength}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           style={{
             flex: 1,
             minHeight: 48,
