@@ -1,10 +1,11 @@
 /**
- * Detalhe do produto — capa, preço, avaliação, ficha, wishlist e
- * adicionar ao carrinho (carrinho no topo §10.1).
+ * Detalhe do produto — coluna mobile-first inspirada no site: capa central,
+ * selos, preço em destaque, buy box com CTAs + garantias, metadados em
+ * pílulas e seções editoriais (Doc Mestre §10.1).
  */
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Text, View } from "react-native";
 
 import { BookCover } from "@/components/BookCover";
@@ -17,6 +18,8 @@ import type { Product } from "@/lib/types";
 import { useAuth } from "@/lib/useAuth";
 import { useCart } from "@/lib/useCart";
 import { useCatalog } from "@/lib/useCatalog";
+
+type IconName = keyof typeof Ionicons.glyphMap;
 
 function Stars({ rating }: { rating: number }) {
   const full = Math.floor(rating);
@@ -35,18 +38,19 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-function Chip({ label, tone = "muted" }: { label: string; tone?: "accent" | "muted" | "warn" }) {
+function Chip({ label, tone = "muted" }: { label: string; tone?: "accent" | "muted" | "warn" | "info" }) {
   const colors = {
     accent: { bg: Colors.accent, fg: Colors.onAccent },
     muted: { bg: Colors.surface, fg: Colors.textMuted },
     warn: { bg: Colors.surface, fg: Colors.warning },
+    info: { bg: "transparent", fg: Colors.accent },
   }[tone];
   return (
     <View
       style={{
         backgroundColor: colors.bg,
-        borderWidth: tone === "muted" || tone === "warn" ? 1 : 0,
-        borderColor: Colors.border,
+        borderWidth: tone === "accent" ? 0 : 1,
+        borderColor: tone === "info" ? Colors.accent : Colors.border,
         borderRadius: Radius.sm,
         paddingHorizontal: 8,
         paddingVertical: 4,
@@ -61,6 +65,89 @@ function Chip({ label, tone = "muted" }: { label: string; tone?: "accent" | "mut
         }}
       >
         {label}
+      </Text>
+    </View>
+  );
+}
+
+/** Título de seção com barra de destaque (mesmo padrão do SectionHeader). */
+function SectionBlock({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <View style={{ gap: 10 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <View style={{ width: 4, height: 18, borderRadius: 2, backgroundColor: Colors.accent }} />
+        <Text
+          style={{
+            fontFamily: Fonts.display,
+            fontSize: 22,
+            letterSpacing: 1.2,
+            color: Colors.text,
+          }}
+        >
+          {title}
+        </Text>
+      </View>
+      {children}
+    </View>
+  );
+}
+
+/** Pílula de metadado (obra, universo, estoque) — inspirada no site. */
+function MetaPill({
+  icon,
+  label,
+  tone = "muted",
+}: {
+  icon: IconName;
+  label: string;
+  tone?: "muted" | "warn";
+}) {
+  if (!label) return null;
+  const warn = tone === "warn";
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        paddingHorizontal: 12,
+        paddingVertical: 7,
+        borderRadius: Radius.pill,
+        borderWidth: 1,
+        borderColor: warn ? Colors.warning : Colors.border,
+        backgroundColor: Colors.surface,
+      }}
+    >
+      <Ionicons name={icon} size={13} color={warn ? Colors.warning : Colors.textMuted} />
+      <Text
+        style={{
+          fontFamily: Fonts.bodySemi,
+          fontSize: 11.5,
+          letterSpacing: 0.4,
+          color: warn ? Colors.warning : Colors.text,
+        }}
+      >
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+/** Linha de garantia da compra (buy box). */
+function TrustLine({ icon, text }: { icon: IconName; text: string }) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+      <Ionicons name={icon} size={14} color={Colors.accent} style={{ marginTop: 2 }} />
+      <Text
+        style={{
+          flex: 1,
+          fontFamily: Fonts.body,
+          fontSize: 12,
+          lineHeight: 16,
+          color: Colors.textMuted,
+        }}
+      >
+        {text}
       </Text>
     </View>
   );
@@ -123,6 +210,7 @@ export default function ProductScreen() {
   const wished = wishlist.includes(product.id);
   const author = authorName(product, catalog!.authors);
   const work = workTitle(product, catalog!.works);
+  const universe = catalog!.universes.find((u) => u.id === product.universeId)?.name ?? "";
 
   const handleAdd = () => {
     add(product.id);
@@ -134,11 +222,12 @@ export default function ProductScreen() {
   return (
     <Screen title="Produto">
       <View style={{ paddingTop: 16, paddingHorizontal: ScreenPadding, gap: 20 }}>
-        <View style={{ flexDirection: "row", gap: 16 }}>
+        {/* capa central */}
+        <View style={{ alignItems: "center" }}>
           <View
             style={{
-              width: 132,
-              height: 198,
+              width: 176,
+              height: 264,
               borderRadius: Radius.sm,
               overflow: "hidden",
               borderWidth: 1,
@@ -148,64 +237,80 @@ export default function ProductScreen() {
           >
             <BookCover cover={product.cover} title={product.title} />
           </View>
+        </View>
 
-          <View style={{ flex: 1, gap: 8, justifyContent: "center" }}>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
-              {product.badge ? <Chip label={product.badge} tone="accent" /> : null}
-              <Chip label={product.digital ? "DIGITAL" : "FÍSICO"} />
-              {esgotado ? <Chip label="ESGOTADO" tone="warn" /> : null}
-            </View>
+        {/* identificação */}
+        <View style={{ gap: 10 }}>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+            {product.badge &&
+            product.badge.toUpperCase() !== (product.digital ? "DIGITAL" : "FÍSICO") ? (
+              <Chip label={product.badge} tone="accent" />
+            ) : null}
+            <Chip label={product.digital ? "DIGITAL" : "FÍSICO"} />
+            {product.digital ? <Chip label="ENTREGA IMEDIATA" tone="info" /> : null}
+            {esgotado ? <Chip label="ESGOTADO" tone="warn" /> : null}
+          </View>
 
-            <Text
-              style={{
-                fontFamily: Fonts.display,
-                fontSize: 24,
-                lineHeight: 27,
-                letterSpacing: 1,
-                color: Colors.text,
-              }}
-            >
-              {product.title.toUpperCase()}
+          <Text
+            style={{
+              fontFamily: Fonts.display,
+              fontSize: 27,
+              lineHeight: 31,
+              letterSpacing: 1,
+              color: Colors.text,
+            }}
+          >
+            {product.title.toUpperCase()}
+          </Text>
+
+          {author ? (
+            <Text style={{ fontFamily: Fonts.body, fontSize: 13.5, color: Colors.textMuted }}>
+              {author}
             </Text>
+          ) : null}
 
-            {author ? (
-              <Text style={{ fontFamily: Fonts.body, fontSize: 13, color: Colors.textMuted }}>
-                {author}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Stars rating={product.rating} />
+            <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.textFaint }}>
+              {product.rating > 0 ? product.rating.toFixed(1).replace(".", ",") : "—"} (
+              {product.reviewCount} {product.reviewCount === 1 ? "avaliação" : "avaliações"})
+            </Text>
+          </View>
+
+          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 8 }}>
+            <Text style={{ fontFamily: Fonts.bodyBold, fontSize: 26, color: Colors.accent }}>
+              {formatBRL(product.price)}
+            </Text>
+            {product.compareAt !== undefined && product.compareAt > product.price ? (
+              <Text
+                style={{
+                  fontFamily: Fonts.body,
+                  fontSize: 14,
+                  color: Colors.textFaint,
+                  textDecorationLine: "line-through",
+                }}
+              >
+                {formatBRL(product.compareAt)}
               </Text>
             ) : null}
-
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <Stars rating={product.rating} />
-              <Text style={{ fontFamily: Fonts.body, fontSize: 11.5, color: Colors.textFaint }}>
-                {product.rating > 0 ? product.rating.toFixed(1) : "—"} (
-                {product.reviewCount} {product.reviewCount === 1 ? "avaliação" : "avaliações"})
-              </Text>
-            </View>
-
-            <View style={{ flexDirection: "row", alignItems: "baseline", gap: 8, marginTop: 2 }}>
-              <Text style={{ fontFamily: Fonts.bodyBold, fontSize: 22, color: Colors.accent }}>
-                {formatBRL(product.price)}
-              </Text>
-              {product.compareAt !== undefined && product.compareAt > product.price ? (
-                <Text
-                  style={{
-                    fontFamily: Fonts.body,
-                    fontSize: 13,
-                    color: Colors.textFaint,
-                    textDecorationLine: "line-through",
-                  }}
-                >
-                  {formatBRL(product.compareAt)}
-                </Text>
-              ) : null}
-            </View>
           </View>
         </View>
 
-        <View style={{ gap: 10 }}>
+        {/* buy box */}
+        <View
+          style={{
+            padding: 16,
+            borderRadius: Radius.md,
+            backgroundColor: Colors.surface,
+            borderWidth: 1,
+            borderColor: Colors.border,
+            gap: 10,
+          }}
+        >
           <Button
             label={esgotado ? "Esgotado" : added ? "Adicionado ✓" : "Adicionar ao carrinho"}
             disabled={esgotado}
+            glow
             onPress={handleAdd}
           />
           <Button
@@ -213,54 +318,60 @@ export default function ProductScreen() {
             variant="secondary"
             onPress={() => void toggleWishlist(product.id)}
           />
-        </View>
-
-        {work ? <InfoLine label="Obra" value={work} /> : null}
-        {product.universeId ? (
-          <InfoLine
-            label="Universo"
-            value={catalog!.universes.find((u) => u.id === product.universeId)?.name ?? ""}
+          <View style={{ height: 1, backgroundColor: Colors.line, marginVertical: 2 }} />
+          <TrustLine
+            icon={product.digital ? "cloud-download-outline" : "cube-outline"}
+            text={
+              product.digital
+                ? "Entrega digital: acesso liberado na Biblioteca após pagamento"
+                : "Envio para todo o Brasil — frete calculado no checkout"
+            }
           />
-        ) : null}
-        {!esgotado && !product.digital && product.stock <= 5 ? (
-          <InfoLine label="Estoque" value={`Restam apenas ${product.stock} unidades`} />
-        ) : null}
-
-        <View style={{ gap: 8 }}>
-          <Text
-            style={{
-              fontFamily: Fonts.display,
-              fontSize: 20,
-              letterSpacing: 1.2,
-              color: Colors.text,
-            }}
-          >
-            SOBRE O ITEM
-          </Text>
-          <Text
-            style={{
-              fontFamily: Fonts.body,
-              fontSize: 14.5,
-              lineHeight: 21,
-              color: Colors.textMuted,
-            }}
-          >
-            {product.description}
-          </Text>
+          <TrustLine icon="card-outline" text="Pagamento por PIX, cartão de crédito ou débito" />
+          <TrustLine
+            icon="shield-checkmark-outline"
+            text="Compra segura · suporte pela Cliffhanger Store"
+          />
         </View>
 
-        {product.specs.length > 0 ? (
-          <View style={{ gap: 8 }}>
+        {/* metadados */}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+          {work ? <MetaPill icon="book-outline" label={work} /> : null}
+          {universe ? <MetaPill icon="globe-outline" label={universe} /> : null}
+          {!esgotado && !product.digital && product.stock <= 5 ? (
+            <MetaPill
+              icon="alert-circle-outline"
+              label={`Restam apenas ${product.stock} unidades`}
+              tone="warn"
+            />
+          ) : null}
+        </View>
+
+        <SectionBlock title="SOBRE O ITEM">
+          <View
+            style={{
+              padding: 14,
+              borderRadius: Radius.md,
+              backgroundColor: Colors.surface,
+              borderWidth: 1,
+              borderColor: Colors.border,
+            }}
+          >
             <Text
               style={{
-                fontFamily: Fonts.display,
-                fontSize: 20,
-                letterSpacing: 1.2,
-                color: Colors.text,
+                fontFamily: Fonts.body,
+                fontSize: 14.5,
+                lineHeight: 21,
+                color: Colors.textMuted,
               }}
             >
-              FICHA TÉCNICA
+              {product.description}
             </Text>
+          </View>
+        </SectionBlock>
+
+        {product.specs.length > 0 ? (
+          <SectionBlock title="FICHA TÉCNICA">
             <View
               style={{
                 borderRadius: Radius.md,
@@ -300,31 +411,9 @@ export default function ProductScreen() {
                 </View>
               ))}
             </View>
-          </View>
+          </SectionBlock>
         ) : null}
       </View>
     </Screen>
-  );
-}
-
-function InfoLine({ label, value }: { label: string; value: string }) {
-  if (!value) return null;
-  return (
-    <View style={{ flexDirection: "row", gap: 8, alignItems: "baseline" }}>
-      <Text
-        style={{
-          fontFamily: Fonts.bodyMedium,
-          fontSize: 11,
-          letterSpacing: 1.2,
-          color: Colors.textFaint,
-          textTransform: "uppercase",
-        }}
-      >
-        {label}
-      </Text>
-      <Text style={{ flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.text }}>
-        {value}
-      </Text>
-    </View>
   );
 }

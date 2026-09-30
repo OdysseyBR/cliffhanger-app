@@ -424,7 +424,7 @@ function CheckoutFlow() {
               placeholder="(11) 99999-9999"
               keyboardType="phone-pad"
             />
-            <Button label="Continuar para entrega" onPress={goNext} />
+            <Button label="Continuar para entrega" glow onPress={goNext} />
           </View>
         ) : null}
 
@@ -538,7 +538,7 @@ function CheckoutFlow() {
               />
             )}
             {entregaError ? <ErrorText>{entregaError}</ErrorText> : null}
-            <Button label="Continuar para pagamento" onPress={goNext} />
+            <Button label="Continuar para pagamento" glow onPress={goNext} />
           </View>
         ) : null}
 
@@ -619,7 +619,7 @@ function CheckoutFlow() {
               {couponError ? <ErrorText>{couponError}</ErrorText> : null}
             </View>
 
-            <Button label="Revisar pedido" onPress={goNext} />
+            <Button label="Revisar pedido" glow onPress={goNext} />
           </View>
         ) : null}
 
@@ -741,6 +741,7 @@ function CheckoutFlow() {
             {orderError ? <ErrorText>{orderError}</ErrorText> : null}
             <Button
               label="Confirmar pedido"
+              glow
               onPress={() => void placeOrder()}
               loading={placing}
               disabled={placing}
@@ -880,17 +881,20 @@ const HINT = {
 
 function StepHeading({ title, hint }: { title: string; hint: string }) {
   return (
-    <View style={{ gap: 4 }}>
-      <Text
-        style={{
-          fontFamily: Fonts.display,
-          fontSize: 24,
-          letterSpacing: 1.2,
-          color: Colors.text,
-        }}
-      >
-        {title.toUpperCase()}
-      </Text>
+    <View style={{ gap: 5 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <View style={{ width: 4, height: 20, borderRadius: 2, backgroundColor: Colors.accent }} />
+        <Text
+          style={{
+            fontFamily: Fonts.display,
+            fontSize: 24,
+            letterSpacing: 1.2,
+            color: Colors.text,
+          }}
+        >
+          {title.toUpperCase()}
+        </Text>
+      </View>
       <Text style={{ fontFamily: Fonts.body, fontSize: 12.5, lineHeight: 17, color: Colors.textMuted }}>
         {hint}
       </Text>

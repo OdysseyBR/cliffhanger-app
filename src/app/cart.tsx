@@ -52,7 +52,7 @@ export default function CartScreen() {
         <EmptyState
           icon="cart-outline"
           title="Seu carrinho está vazio."
-          message="Adicione itens da loja para vê-los aqui."
+          message="Explore os universos, escolha seu formato e comece uma nova história."
           actionLabel="Ver a loja"
           onAction={() => router.replace("/shop")}
         />
@@ -62,10 +62,52 @@ export default function CartScreen() {
 
   const total = subtotal(products);
   const missing = items.length - lines.length;
+  const count = items.reduce((sum, i) => sum + i.qty, 0);
 
   return (
     <Screen title="Carrinho">
-      <View style={{ paddingTop: 16, paddingHorizontal: ScreenPadding, gap: 12 }}>
+      <View style={{ paddingTop: 16, paddingHorizontal: ScreenPadding, gap: 14 }}>
+        <View style={{ gap: 10 }}>
+          <Text
+            style={{
+              fontFamily: Fonts.body,
+              fontSize: 13.5,
+              lineHeight: 19,
+              color: Colors.textMuted,
+            }}
+          >
+            Itens digitais e físicos convivem no mesmo pedido — o frete só é cobrado no que precisa
+            de envio.
+          </Text>
+          <Pressable
+            onPress={() => router.replace("/shop")}
+            hitSlop={8}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              {
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 6,
+                alignSelf: "flex-start",
+                opacity: pressed ? 0.6 : 1,
+              },
+            ]}
+          >
+            <Text
+              style={{
+                fontFamily: Fonts.bodyBold,
+                fontSize: 12.5,
+                letterSpacing: 1,
+                color: Colors.accent,
+              }}
+            >
+              CONTINUAR COMPRANDO
+            </Text>
+            <Text style={{ fontFamily: Fonts.bodyBold, fontSize: 14, color: Colors.accent }}>
+              →
+            </Text>
+          </Pressable>
+        </View>
         {lines.map(({ item, product }) => (
           <View
             key={item.productId}
@@ -105,9 +147,31 @@ export default function CartScreen() {
               >
                 {product!.title}
               </Text>
-              <Text style={{ fontFamily: Fonts.bodyBold, fontSize: 13, color: Colors.accent }}>
-                {formatBRL(product!.price)}
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text style={{ fontFamily: Fonts.bodyBold, fontSize: 13, color: Colors.accent }}>
+                  {formatBRL(product!.price)}
+                </Text>
+                <View
+                  style={{
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: Radius.pill,
+                    borderWidth: 1,
+                    borderColor: product!.digital ? Colors.accent : Colors.border,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: Fonts.bodyBold,
+                      fontSize: 9,
+                      letterSpacing: 0.8,
+                      color: product!.digital ? Colors.accent : Colors.textMuted,
+                    }}
+                  >
+                    {product!.digital ? "DIGITAL" : "FÍSICO"}
+                  </Text>
+                </View>
+              </View>
 
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                 <View
@@ -173,7 +237,7 @@ export default function CartScreen() {
 
         <View
           style={{
-            marginTop: 8,
+            marginTop: 4,
             padding: 16,
             borderRadius: Radius.md,
             backgroundColor: Colors.surface,
@@ -182,7 +246,13 @@ export default function CartScreen() {
             gap: 6,
           }}
         >
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+            }}
+          >
             <Text
               style={{
                 fontFamily: Fonts.bodyMedium,
@@ -194,24 +264,17 @@ export default function CartScreen() {
             >
               Subtotal
             </Text>
-            <Text style={{ fontFamily: Fonts.bodyBold, fontSize: 18, color: Colors.accent }}>
+            <Text style={{ fontFamily: Fonts.bodyBold, fontSize: 20, color: Colors.accent }}>
               {formatBRL(total)}
             </Text>
           </View>
           <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.textFaint }}>
-            {items.reduce((sum, i) => sum + i.qty, 0)}{" "}
-            {items.reduce((sum, i) => sum + i.qty, 0) === 1 ? "item" : "itens"} no carrinho
+            {count} {count === 1 ? "item" : "itens"} no carrinho · frete e prazo calculados no
+            checkout
           </Text>
         </View>
 
-        <View style={{ gap: 10, marginTop: 8 }}>
-          <Button label="Finalizar compra" onPress={() => router.push("/checkout")} />
-          <Button
-            label="Continuar comprando"
-            variant="secondary"
-            onPress={() => router.replace("/shop")}
-          />
-        </View>
+        <Button label="Finalizar compra" glow onPress={() => router.push("/checkout")} />
       </View>
     </Screen>
   );

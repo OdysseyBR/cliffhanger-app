@@ -11,6 +11,8 @@ interface ButtonProps {
   variant?: "primary" | "secondary";
   loading?: boolean;
   disabled?: boolean;
+  /** brilho amarelo no botão primário (CTAs de conversão) */
+  glow?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -20,6 +22,7 @@ export function Button({
   variant = "primary",
   loading = false,
   disabled = false,
+  glow = false,
   style,
 }: ButtonProps) {
   const primary = variant === "primary";
@@ -43,6 +46,15 @@ export function Button({
           borderWidth: primary ? 0 : 1,
           borderColor: primary ? Colors.accent : Colors.primary,
           opacity: inactive ? 0.55 : pressed ? 0.85 : 1,
+          ...(primary && glow && !inactive
+            ? {
+                shadowColor: Colors.accent,
+                shadowOpacity: 0.45,
+                shadowRadius: 8,
+                shadowOffset: { width: 0, height: 4 },
+                elevation: 6,
+              }
+            : null),
         },
         style,
       ]}
