@@ -6,7 +6,7 @@
  */
 import { Ionicons } from "@expo/vector-icons";
 import { router, type Href } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/Button";
@@ -262,72 +262,48 @@ export default function NotificationsScreen() {
         ) : null}
 
         {/* o que a loja avisa (§12.3) */}
-        <View
-          style={{
-            padding: 16,
-            borderRadius: Radius.md,
-            backgroundColor: Colors.surface,
-            borderWidth: 1,
-            borderColor: Colors.border,
-            gap: 12,
-          }}
-        >
-          <Text
+        <SectionBlock title="O que você recebe">
+          <View
             style={{
-              fontFamily: Fonts.bodySemi,
-              fontSize: 11,
-              letterSpacing: 1.4,
-              textTransform: "uppercase",
-              color: Colors.textFaint,
+              padding: 16,
+              borderRadius: Radius.md,
+              backgroundColor: Colors.surface,
+              borderWidth: 1,
+              borderColor: Colors.border,
+              gap: 12,
             }}
           >
-            O que você recebe
-          </Text>
-          {PROMISES.map((item) => (
-            <View key={item.label} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Ionicons name={item.icon} size={17} color={Colors.accent} />
-              <Text style={{ flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.text }}>
-                {item.label}
-              </Text>
-            </View>
-          ))}
-        </View>
+            {PROMISES.map((item) => (
+              <View key={item.label} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <Ionicons name={item.icon} size={17} color={Colors.accent} />
+                <Text style={{ flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.text }}>
+                  {item.label}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </SectionBlock>
 
         {/* histórico local */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 8,
-          }}
+        <SectionBlock
+          title="Histórico"
+          action={
+            history.length > 0 ? (
+              <Pressable onPress={() => void clearAll()} hitSlop={8}>
+                <Text
+                  style={{
+                    fontFamily: Fonts.bodyMedium,
+                    fontSize: 12,
+                    color: Colors.textMuted,
+                    textDecorationLine: "underline",
+                  }}
+                >
+                  Limpar
+                </Text>
+              </Pressable>
+            ) : null
+          }
         >
-          <Text
-            style={{
-              fontFamily: Fonts.bodySemi,
-              fontSize: 11,
-              letterSpacing: 1.4,
-              textTransform: "uppercase",
-              color: Colors.textFaint,
-            }}
-          >
-            Histórico
-          </Text>
-          {history.length > 0 ? (
-            <Pressable onPress={() => void clearAll()} hitSlop={8}>
-              <Text
-                style={{
-                  fontFamily: Fonts.bodyMedium,
-                  fontSize: 12,
-                  color: Colors.textMuted,
-                  textDecorationLine: "underline",
-                }}
-              >
-                Limpar
-              </Text>
-            </Pressable>
-          ) : null}
-        </View>
 
         {history.length === 0 ? (
           <EmptyState
@@ -403,7 +379,49 @@ export default function NotificationsScreen() {
             ))}
           </View>
         )}
+        </SectionBlock>
       </View>
     </Screen>
+  );
+}
+
+/** Título de seção com barra de destaque (mesmo padrão do site/produto). */
+function SectionBlock({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <View style={{ gap: 10 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 8,
+        }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flex: 1 }}>
+          <View style={{ width: 4, height: 18, borderRadius: 2, backgroundColor: Colors.accent }} />
+          <Text
+            numberOfLines={1}
+            style={{
+              fontFamily: Fonts.display,
+              fontSize: 22,
+              letterSpacing: 1.2,
+              color: Colors.text,
+            }}
+          >
+            {title.toUpperCase()}
+          </Text>
+        </View>
+        {action}
+      </View>
+      {children}
+    </View>
   );
 }

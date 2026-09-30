@@ -3,6 +3,7 @@
  * cliente logado com status (Aguardando pagamento → Entregue), total,
  * pagamento e itens.
  */
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
@@ -130,7 +131,18 @@ export default function OrdersScreen() {
       onRefresh={onRefresh}
       refreshing={refreshing}
     >
-      <View style={{ paddingTop: 16, paddingHorizontal: ScreenPadding, gap: 12 }}>
+      <View style={{ paddingTop: 16, paddingHorizontal: ScreenPadding, gap: 14 }}>
+        <Text
+          style={{
+            fontFamily: Fonts.body,
+            fontSize: 13,
+            lineHeight: 18,
+            color: Colors.textMuted,
+          }}
+        >
+          Acompanhe seus pedidos — do pagamento até a entrega.
+        </Text>
+
         {error ? (
           <Text style={{ fontFamily: Fonts.body, fontSize: 12.5, color: Colors.warning }}>
             {error}
@@ -169,6 +181,8 @@ export default function OrdersScreen() {
               </Text>
               <StatusChip status={order.status} />
             </View>
+
+            <View style={{ height: 1, backgroundColor: Colors.line }} />
 
             <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.textFaint }}>
               {formatDate(order.createdAt) ?? "—"} · {PAYMENT_LABEL[order.paymentMethod]}
@@ -209,13 +223,21 @@ export default function OrdersScreen() {
             </View>
 
             {order.address ? (
-              <Text
-                numberOfLines={1}
-                style={{ fontFamily: Fonts.body, fontSize: 11.5, color: Colors.textFaint }}
-              >
-                {order.address.street}, {order.address.number} — {order.address.city}/
-                {order.address.state}
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                <Ionicons name="location-outline" size={12} color={Colors.textFaint} />
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    flex: 1,
+                    fontFamily: Fonts.body,
+                    fontSize: 11.5,
+                    color: Colors.textFaint,
+                  }}
+                >
+                  {order.address.street}, {order.address.number} — {order.address.city}/
+                  {order.address.state}
+                </Text>
+              </View>
             ) : null}
           </View>
         ))}
