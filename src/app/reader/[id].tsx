@@ -265,6 +265,7 @@ export default function ReaderScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={Colors.text} />
         </Pressable>
+        <View style={{ width: 4, height: 16, borderRadius: 2, backgroundColor: Colors.accent }} />
         <View style={{ flex: 1 }}>
           <Text
             numberOfLines={1}
@@ -287,14 +288,19 @@ export default function ReaderScreen() {
           style={{
             backgroundColor: Colors.surface,
             borderWidth: 1,
-            borderColor: Colors.border,
-            borderRadius: Radius.sm,
-            paddingHorizontal: 8,
+            borderColor: Colors.accent,
+            borderRadius: Radius.pill,
+            paddingHorizontal: 10,
             paddingVertical: 4,
           }}
         >
           <Text
-            style={{ fontFamily: Fonts.bodyBold, fontSize: 11, color: Colors.accent }}
+            style={{
+              fontFamily: Fonts.bodyBold,
+              fontSize: 11,
+              letterSpacing: 1,
+              color: Colors.accent,
+            }}
           >
             {percent}%
           </Text>
@@ -367,8 +373,8 @@ export default function ReaderScreen() {
       >
         <View
           style={{
-            height: 4,
-            borderRadius: 2,
+            height: 6,
+            borderRadius: 3,
             backgroundColor: Colors.line,
             overflow: "hidden",
           }}
@@ -381,7 +387,7 @@ export default function ReaderScreen() {
               bottom: 0,
               width: `${percent}%`,
               backgroundColor: Colors.accent,
-              borderRadius: 2,
+              borderRadius: 3,
             }}
           />
         </View>
@@ -399,10 +405,10 @@ export default function ReaderScreen() {
           />
           <Text
             style={{
-              fontFamily: Fonts.bodySemi,
-              fontSize: 14,
+              fontFamily: Fonts.display,
+              fontSize: 18,
+              letterSpacing: 1.2,
               color: Colors.textMuted,
-              letterSpacing: 0.6,
             }}
           >
             {ready && pages > 0 ? `${effectivePage} / ${pages}` : "—"}

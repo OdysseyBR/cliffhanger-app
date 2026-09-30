@@ -350,6 +350,7 @@ export default function PlayerScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={Colors.text} />
         </Pressable>
+        <View style={{ width: 4, height: 16, borderRadius: 2, backgroundColor: Colors.accent }} />
         <Text
           numberOfLines={1}
           style={{
@@ -367,16 +368,16 @@ export default function PlayerScreen() {
       <View
         style={{
           flex: 1,
-          paddingHorizontal: 28,
+          paddingHorizontal: 20,
           paddingBottom: insets.bottom + 24,
           justifyContent: "center",
-          gap: 18,
+          gap: 20,
         }}
       >
         {/* capa */}
         <View
           style={{
-            width: 190,
+            width: 200,
             maxWidth: "70%",
             aspectRatio: 2 / 3,
             alignSelf: "center",
@@ -398,104 +399,116 @@ export default function PlayerScreen() {
           )}
         </View>
 
-        {/* barra + tempos */}
-        <View>
-          <SeekBar position={current} duration={duration} onSeek={seekToSeconds} />
+        {/* painel dos controles */}
+        <View
+          style={{
+            padding: 20,
+            borderRadius: Radius.lg,
+            backgroundColor: Colors.surface,
+            borderWidth: 1,
+            borderColor: Colors.border,
+            gap: 18,
+          }}
+        >
+          {/* barra + tempos */}
+          <View>
+            <SeekBar position={current} duration={duration} onSeek={seekToSeconds} />
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginTop: -4,
+              }}
+            >
+              <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.accent }}>
+                {formatTime(current)}
+              </Text>
+              <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.textFaint }}>
+                {duration > 0 ? formatTime(duration) : "--:--"}
+              </Text>
+            </View>
+          </View>
+
+          {duration <= 0 ? (
+            <View
+              style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
+            >
+              <ActivityIndicator color={Colors.accent} size="small" />
+              <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.textMuted }}>
+                Carregando o áudio…
+              </Text>
+            </View>
+          ) : null}
+
+          {/* controles */}
           <View
             style={{
               flexDirection: "row",
-              justifyContent: "space-between",
-              marginTop: -4,
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 30,
             }}
           >
-            <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.accent }}>
-              {formatTime(current)}
-            </Text>
-            <Text style={{ fontFamily: Fonts.bodyMedium, fontSize: 12, color: Colors.textFaint }}>
-              {duration > 0 ? formatTime(duration) : "--:--"}
-            </Text>
+            <ControlButton
+              icon="play-skip-back"
+              label="Voltar 15 segundos"
+              onPress={() => skip(-15)}
+            />
+            <Pressable
+              onPress={togglePlay}
+              accessibilityLabel={status.playing ? "Pausar" : "Reproduzir"}
+              style={({ pressed }) => [
+                {
+                  width: 78,
+                  height: 78,
+                  borderRadius: 39,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: Colors.accent,
+                  opacity: pressed ? 0.8 : 1,
+                },
+              ]}
+            >
+              <Ionicons
+                name={status.playing ? "pause" : "play"}
+                size={34}
+                color={Colors.onAccent}
+                style={status.playing ? undefined : { marginLeft: 4 }}
+              />
+            </Pressable>
+            <ControlButton
+              icon="play-skip-forward"
+              label="Avançar 15 segundos"
+              onPress={() => skip(15)}
+            />
           </View>
-        </View>
 
-        {duration <= 0 ? (
-          <View
-            style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
-          >
-            <ActivityIndicator color={Colors.accent} size="small" />
-            <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.textMuted }}>
-              Carregando o áudio…
-            </Text>
-          </View>
-        ) : null}
-
-        {/* controles */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 30,
-          }}
-        >
-          <ControlButton
-            icon="play-skip-back"
-            label="Voltar 15 segundos"
-            onPress={() => skip(-15)}
-          />
+          {/* velocidade */}
           <Pressable
-            onPress={togglePlay}
-            accessibilityLabel={status.playing ? "Pausar" : "Reproduzir"}
+            onPress={cycleRate}
+            accessibilityLabel={`Velocidade ${String(rate).replace(".", ",")} vezes`}
             style={({ pressed }) => [
               {
-                width: 78,
-                height: 78,
-                borderRadius: 39,
+                alignSelf: "center",
+                height: 38,
+                paddingHorizontal: 18,
+                borderRadius: Radius.pill,
+                borderWidth: 1,
+                borderColor: Colors.border,
+                backgroundColor: Colors.surfaceAlt,
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: Colors.accent,
-                opacity: pressed ? 0.8 : 1,
+                opacity: pressed ? 0.7 : 1,
               },
             ]}
           >
-            <Ionicons
-              name={status.playing ? "pause" : "play"}
-              size={34}
-              color={Colors.onAccent}
-              style={status.playing ? undefined : { marginLeft: 4 }}
-            />
+            <Text
+              style={{ fontFamily: Fonts.bodyBold, fontSize: 13, color: Colors.accent }}
+            >
+              {`${String(rate).replace(".", ",")}×`}
+            </Text>
           </Pressable>
-          <ControlButton
-            icon="play-skip-forward"
-            label="Avançar 15 segundos"
-            onPress={() => skip(15)}
-          />
         </View>
-
-        {/* velocidade */}
-        <Pressable
-          onPress={cycleRate}
-          accessibilityLabel={`Velocidade ${String(rate).replace(".", ",")} vezes`}
-          style={({ pressed }) => [
-            {
-              alignSelf: "center",
-              height: 38,
-              paddingHorizontal: 18,
-              borderRadius: Radius.pill,
-              borderWidth: 1,
-              borderColor: Colors.border,
-              backgroundColor: Colors.surface,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: pressed ? 0.7 : 1,
-            },
-          ]}
-        >
-          <Text
-            style={{ fontFamily: Fonts.bodyBold, fontSize: 13, color: Colors.accent }}
-          >
-            {`${String(rate).replace(".", ",")}×`}
-          </Text>
-        </Pressable>
       </View>
     </View>
   );
