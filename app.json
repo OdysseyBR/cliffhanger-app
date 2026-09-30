@@ -7,9 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "cliffhangerapp",
     "userInterfaceStyle": "dark",
-    "ios": {
-      "icon": "./assets/expo.icon"
-    },
     "android": {
       "package": "com.odysseybr.cliffhanger",
       "googleServicesFile": "./google-services.json",
@@ -37,8 +34,8 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#0C0014",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "image": "./assets/images/logo-wordmark.png",
+          "imageWidth": 200
         }
       ],
       "expo-audio",

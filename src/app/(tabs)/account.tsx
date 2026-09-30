@@ -5,7 +5,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
@@ -216,6 +216,12 @@ export default function AccountScreen() {
 
   return (
     <Screen contentStyle={{ paddingTop: 16 }}>
+      <Image
+        source={require("../../../assets/images/logo-wordmark.png")}
+        accessibilityLabel="Cliffhanger Store"
+        style={{ width: 244, height: 66, alignSelf: "center", marginBottom: 14 }}
+        resizeMode="contain"
+      />
       <Text
         style={{
           paddingHorizontal: ScreenPadding,
