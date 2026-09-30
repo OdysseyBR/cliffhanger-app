@@ -1,0 +1,39 @@
+{
+  "cli": {
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "env": {
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyAq-NeRGrNzx29a0tHfea9Z32n86WIDJQ0",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "cliffhanger-store.firebaseapp.com",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "cliffhanger-store",
+        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "cliffhanger-store.firebasestorage.app",
+        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "587752255188",
+        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:587752255188:web:edd9c77f89fbf8f8031541",
+        "EXPO_PUBLIC_STORE_URL": "https://www.cliffhangerstore.xyz"
+      }
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "extends": "base"
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
