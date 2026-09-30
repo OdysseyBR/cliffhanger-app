@@ -116,6 +116,13 @@ function LibraryRow({
           </View>
         </View>
       </View>
+
+      <Ionicons
+        name="chevron-forward"
+        size={18}
+        color={Colors.textFaint}
+        style={{ alignSelf: "center" }}
+      />
     </Pressable>
   );
 }
@@ -241,8 +248,8 @@ export default function LibraryScreen() {
               color: Colors.textMuted,
             }}
           >
-            {items.length} {items.length === 1 ? "item" : "itens"} · progresso sincronizado com a
-            loja
+            {items.length} {items.length === 1 ? "item" : "itens"} · progresso sincronizado entre
+            app e site
           </Text>
         </View>
 
@@ -269,16 +276,19 @@ export default function LibraryScreen() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <View style={{ gap: 10 }}>
-      <Text
-        style={{
-          fontFamily: Fonts.display,
-          fontSize: 20,
-          letterSpacing: 1.2,
-          color: Colors.text,
-        }}
-      >
-        {title.toUpperCase()}
-      </Text>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <View style={{ width: 4, height: 18, borderRadius: 2, backgroundColor: Colors.accent }} />
+        <Text
+          style={{
+            fontFamily: Fonts.display,
+            fontSize: 22,
+            letterSpacing: 1.2,
+            color: Colors.text,
+          }}
+        >
+          {title.toUpperCase()}
+        </Text>
+      </View>
       {children}
     </View>
   );

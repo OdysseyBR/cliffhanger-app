@@ -42,10 +42,22 @@ export default function AccountScreen() {
             fontSize: 26,
             letterSpacing: 1.4,
             color: Colors.text,
-            marginBottom: 16,
+            marginBottom: 4,
           }}
         >
           CONTA
+        </Text>
+        <Text
+          style={{
+            paddingHorizontal: ScreenPadding,
+            marginBottom: 18,
+            fontFamily: Fonts.body,
+            fontSize: 13.5,
+            lineHeight: 19,
+            color: Colors.textMuted,
+          }}
+        >
+          Sua conta única — a mesma da loja Cliffhanger Store.
         </Text>
 
         <View style={{ paddingHorizontal: ScreenPadding, gap: 16 }}>
@@ -90,14 +102,33 @@ export default function AccountScreen() {
               >
                 {user.email}
               </Text>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 2 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 5,
+                  alignSelf: "flex-start",
+                  marginTop: 6,
+                  paddingHorizontal: 10,
+                  paddingVertical: 4,
+                  borderRadius: Radius.pill,
+                  borderWidth: 1,
+                  borderColor: user.emailVerified ? Colors.border : Colors.warning,
+                  backgroundColor: Colors.surface,
+                }}
+              >
                 <Ionicons
                   name={user.emailVerified ? "checkmark-circle" : "alert-circle-outline"}
-                  size={13}
-                  color={user.emailVerified ? Colors.accent : Colors.textFaint}
+                  size={12}
+                  color={user.emailVerified ? Colors.accent : Colors.warning}
                 />
                 <Text
-                  style={{ fontFamily: Fonts.body, fontSize: 11, color: Colors.textFaint }}
+                  style={{
+                    fontFamily: Fonts.bodySemi,
+                    fontSize: 10.5,
+                    letterSpacing: 0.6,
+                    color: user.emailVerified ? Colors.text : Colors.warning,
+                  }}
                 >
                   {user.emailVerified ? "E-mail verificado" : "E-mail não verificado"}
                 </Text>
@@ -105,75 +136,34 @@ export default function AccountScreen() {
             </View>
           </View>
 
-          <InfoRow label="Wishlist" value={`${wishlist.length} ${wishlist.length === 1 ? "item salvo" : "itens salvos"}`} />
-          <InfoRow label="Conta única" value="O mesmo acesso vale para a loja e o app." />
+          <InfoRow
+            icon="heart-outline"
+            label="Wishlist"
+            value={`${wishlist.length} ${wishlist.length === 1 ? "item salvo" : "itens salvos"}`}
+          />
 
-          <Pressable
-            onPress={() => router.push("/orders")}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              {
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 10,
-                padding: 14,
-                borderRadius: Radius.md,
-                backgroundColor: Colors.surface,
-                borderWidth: 1,
-                borderColor: Colors.border,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <Ionicons name="receipt-outline" size={20} color={Colors.accent} />
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text style={{ fontFamily: Fonts.bodySemi, fontSize: 14, color: Colors.text }}>
-                Meus pedidos
-              </Text>
-              <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.textMuted }}>
-                Status das compras e histórico.
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={Colors.textFaint} />
-          </Pressable>
-
-          <Pressable
-            onPress={() => router.push("/notifications")}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              {
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 10,
-                padding: 14,
-                borderRadius: Radius.md,
-                backgroundColor: Colors.surface,
-                borderWidth: 1,
-                borderColor: Colors.border,
-                opacity: pressed ? 0.8 : 1,
-              },
-            ]}
-          >
-            <Ionicons name="notifications-outline" size={20} color={Colors.accent} />
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text style={{ fontFamily: Fonts.bodySemi, fontSize: 14, color: Colors.text }}>
-                Notificações
-              </Text>
-              <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.textMuted }}>
-                Avisos de pedidos, lançamentos e promoções.
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={Colors.textFaint} />
-          </Pressable>
-
-          <View style={{ gap: 10 }}>
-            <Button
-              label="Ver minha biblioteca"
-              variant="secondary"
+          <SectionBlock title="Atalhos">
+            <NavCard
+              icon="receipt-outline"
+              title="Meus pedidos"
+              subtitle="Status das compras e histórico."
+              onPress={() => router.push("/orders")}
+            />
+            <NavCard
+              icon="notifications-outline"
+              title="Notificações"
+              subtitle="Avisos de pedidos, lançamentos e promoções."
+              onPress={() => router.push("/notifications")}
+            />
+            <NavCard
+              icon="library-outline"
+              title="Minha biblioteca"
+              subtitle="E-books e audiobooks com progresso."
               onPress={() => router.push("/library")}
             />
-            <Button label="Sair da conta" variant="secondary" onPress={() => void logOut()} />
-          </View>
+          </SectionBlock>
+
+          <Button label="Sair da conta" variant="secondary" onPress={() => void logOut()} />
         </View>
       </Screen>
     );
@@ -357,12 +347,88 @@ export default function AccountScreen() {
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+/** Título de seção com barra de destaque (mesmo padrão do site/produto). */
+function SectionBlock({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <View style={{ gap: 10 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <View style={{ width: 4, height: 18, borderRadius: 2, backgroundColor: Colors.accent }} />
+        <Text
+          style={{
+            fontFamily: Fonts.display,
+            fontSize: 22,
+            letterSpacing: 1.2,
+            color: Colors.text,
+          }}
+        >
+          {title.toUpperCase()}
+        </Text>
+      </View>
+      {children}
+    </View>
+  );
+}
+
+/** Cartão de atalho (navegação) — ícone amarelo, título, apoio e chevron. */
+function NavCard({
+  icon,
+  title,
+  subtitle,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      style={({ pressed }) => [
+        {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+          padding: 14,
+          borderRadius: Radius.md,
+          backgroundColor: Colors.surface,
+          borderWidth: 1,
+          borderColor: Colors.border,
+          opacity: pressed ? 0.8 : 1,
+        },
+      ]}
+    >
+      <Ionicons name={icon} size={20} color={Colors.accent} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={{ fontFamily: Fonts.bodySemi, fontSize: 14, color: Colors.text }}>
+          {title}
+        </Text>
+        <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.textMuted }}>
+          {subtitle}
+        </Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={Colors.textFaint} />
+    </Pressable>
+  );
+}
+
+/** Linha de dado (stat) — ícone + rótulo à esquerda, valor à direita. */
+function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon?: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string;
+}) {
   return (
     <View
       style={{
         flexDirection: "row",
         justifyContent: "space-between",
+        alignItems: "center",
         gap: 16,
         paddingVertical: 12,
         paddingHorizontal: 16,
@@ -372,18 +438,21 @@ function InfoRow({ label, value }: { label: string; value: string }) {
         borderColor: Colors.border,
       }}
     >
-      <Text
-        style={{
-          fontFamily: Fonts.bodyMedium,
-          fontSize: 11,
-          letterSpacing: 1.2,
-          color: Colors.textFaint,
-          textTransform: "uppercase",
-        }}
-      >
-        {label}
-      </Text>
-      <Text style={{ flex: 1, fontFamily: Fonts.body, fontSize: 13, color: Colors.text, textAlign: "right" }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 7 }}>
+        {icon ? <Ionicons name={icon} size={14} color={Colors.accent} /> : null}
+        <Text
+          style={{
+            fontFamily: Fonts.bodyMedium,
+            fontSize: 11,
+            letterSpacing: 1.2,
+            color: Colors.textFaint,
+            textTransform: "uppercase",
+          }}
+        >
+          {label}
+        </Text>
+      </View>
+      <Text style={{ fontFamily: Fonts.body, fontSize: 13, color: Colors.text, textAlign: "right" }}>
         {value}
       </Text>
     </View>
