@@ -43,7 +43,10 @@ export function AppHeader({ title }: AppHeaderProps) {
         >
           <Ionicons name="arrow-back" size={24} color={Colors.text} />
         </Pressable>
-      ) : null}
+      ) : (
+        /* espaçador simétrico ao carrinho — mantém o wordmark centralizado */
+        <View style={{ width: 42 }} />
+      )}
 
       {title !== undefined ? (
         <Text
@@ -59,7 +62,7 @@ export function AppHeader({ title }: AppHeaderProps) {
           {title.toUpperCase()}
         </Text>
       ) : (
-        <View style={{ flex: 1, alignItems: "flex-start" }}>
+        <View style={{ flex: 1, alignItems: "center" }}>
           <Wordmark height={26} />
         </View>
       )}

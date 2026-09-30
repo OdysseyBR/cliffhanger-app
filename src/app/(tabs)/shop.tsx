@@ -4,7 +4,7 @@
  * atualizam os params da própria rota.
  */
 import { router, useLocalSearchParams } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
@@ -16,6 +16,16 @@ import type { ProductCategory } from "@/lib/types";
 import { useCatalog } from "@/lib/useCatalog";
 
 type Filter = ProductCategory | "todos";
+
+/** Ordenação da grade (mesmas opções do "Ordenar por" do site). */
+type Sort = "relevancia" | "menor" | "maior" | "avaliados";
+
+const SORT_OPTIONS: { value: Sort; label: string }[] = [
+  { value: "relevancia", label: "Relevância" },
+  { value: "menor", label: "Menor preço" },
+  { value: "maior", label: "Maior preço" },
+  { value: "avaliados", label: "Melhor avaliados" },
+];
 
 const VALID_FILTERS = new Set<string>([
   "todos",
@@ -35,6 +45,7 @@ export default function ShopScreen() {
   const params = useLocalSearchParams<{ filter?: string }>();
   const { catalog, loading, error, reload } = useCatalog();
   const filter = normalizeFilter(params.filter);
+  const [sort, setSort] = useState<Sort>("relevancia");
   const selectFilter = (value: Filter) => {
     void router.setParams({ filter: value });
   };
@@ -53,6 +64,21 @@ export default function ShopScreen() {
         count: counts.get(category) ?? 0,
       }));
   }, [catalog]);
+
+  // grade filtrada + ordenada (ordem do catálogo em "relevância")
+  const visible = useMemo(() => {
+    const base = !catalog
+      ? []
+      : filter === "todos"
+        ? catalog.products
+        : catalog.products.filter((p) => p.category === filter);
+    if (sort === "menor") return [...base].sort((a, b) => a.price - b.price);
+    if (sort === "maior") return [...base].sort((a, b) => b.price - a.price);
+    if (sort === "avaliados") {
+      return [...base].sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount);
+    }
+    return base;
+  }, [catalog, filter, sort]);
 
   if (loading && !catalog) {
     return <Loading label="Carregando a loja…" />;
@@ -73,7 +99,6 @@ export default function ShopScreen() {
   }
 
   const products = catalog?.products ?? [];
-  const filtered = filter === "todos" ? products : products.filter((p) => p.category === filter);
 
   return (
     <Screen
@@ -83,17 +108,29 @@ export default function ShopScreen() {
       refreshing={false}
     >
       <View style={{ paddingTop: 16, gap: 12 }}>
-        <Text
-          style={{
-            paddingHorizontal: ScreenPadding,
-            fontFamily: Fonts.display,
-            fontSize: 26,
-            letterSpacing: 1.4,
-            color: Colors.text,
-          }}
-        >
-          LOJA
-        </Text>
+        <View style={{ paddingHorizontal: ScreenPadding, gap: 6 }}>
+          <Text
+            style={{
+              fontFamily: Fonts.display,
+              fontSize: 26,
+              letterSpacing: 1.4,
+              color: Colors.text,
+            }}
+          >
+            LOJA
+          </Text>
+          <Text
+            style={{
+              fontFamily: Fonts.body,
+              fontSize: 13.5,
+              lineHeight: 19,
+              color: Colors.textMuted,
+            }}
+          >
+            Catálogo completo da Cliffhanger — livros, e-books, audiobooks, produtos e
+            colecionáveis.
+          </Text>
+        </View>
 
         <ScrollView
           horizontal
@@ -114,16 +151,44 @@ export default function ShopScreen() {
         <Text
           style={{
             paddingHorizontal: ScreenPadding,
+            fontFamily: Fonts.bodyBold,
+            fontSize: 10,
+            letterSpacing: 1.4,
+            textTransform: "uppercase",
+            color: Colors.accent,
+          }}
+        >
+          Ordenar por
+        </Text>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: ScreenPadding }}
+        >
+          {SORT_OPTIONS.map((option) => (
+            <Chip
+              key={option.value}
+              label={option.label}
+              active={sort === option.value}
+              onPress={() => setSort(option.value)}
+            />
+          ))}
+        </ScrollView>
+
+        <Text
+          style={{
+            paddingHorizontal: ScreenPadding,
             fontFamily: Fonts.body,
             fontSize: 12,
             color: Colors.textFaint,
           }}
         >
-          {filtered.length} {filtered.length === 1 ? "item" : "itens"}
+          {visible.length} {visible.length === 1 ? "item" : "itens"}
         </Text>
 
         <ProductGrid
-          products={filtered}
+          products={visible}
           emptyTitle="Nenhum item nesta categoria."
           emptyMessage="Escolha outro filtro acima."
           emptyIcon="cube-outline"

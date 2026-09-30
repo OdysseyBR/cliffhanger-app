@@ -5,7 +5,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Keyboard, Pressable, Text, TextInput, View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
 import { ProductGrid } from "@/components/ProductGrid";
@@ -20,6 +20,7 @@ export default function SearchScreen() {
   const paramQ = typeof params.q === "string" && params.q.length > 0 ? params.q : null;
   const [query, setQuery] = useState(paramQ ?? "");
   const [appliedQ, setAppliedQ] = useState<string | null>(paramQ);
+  const [focused, setFocused] = useState(false);
 
   // sincroniza quando outra tela empurra um novo `q` (trilho de universos)
   if (paramQ !== null && paramQ !== appliedQ) {
@@ -54,55 +55,111 @@ export default function SearchScreen() {
 
   return (
     <Screen contentStyle={{ paddingTop: 16 }}>
-      <Text
-        style={{
-          paddingHorizontal: ScreenPadding,
-          fontFamily: Fonts.display,
-          fontSize: 26,
-          letterSpacing: 1.4,
-          color: Colors.text,
-          marginBottom: 12,
-        }}
-      >
-        BUSCAR
-      </Text>
+      <View style={{ paddingHorizontal: ScreenPadding, gap: 6, marginBottom: 12 }}>
+        <Text
+          style={{
+            fontFamily: Fonts.display,
+            fontSize: 26,
+            letterSpacing: 1.4,
+            color: Colors.text,
+          }}
+        >
+          BUSCAR
+        </Text>
+        <Text
+          style={{
+            fontFamily: Fonts.body,
+            fontSize: 13.5,
+            lineHeight: 19,
+            color: Colors.textMuted,
+          }}
+        >
+          Obras, produtos, e-books, audiobooks, autores e universos.
+        </Text>
+      </View>
 
       <View
         style={{
           marginHorizontal: ScreenPadding,
           flexDirection: "row",
           alignItems: "center",
-          backgroundColor: Colors.surfaceAlt,
-          borderWidth: 1,
-          borderColor: Colors.border,
-          borderRadius: Radius.sm,
-          paddingHorizontal: 12,
           gap: 8,
         }}
       >
-        <Ionicons name="search" size={18} color={Colors.textMuted} />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Título, autor, obra ou universo"
-          placeholderTextColor={Colors.textFaint}
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="search"
+        <View
           style={{
             flex: 1,
-            minHeight: 48,
-            fontFamily: Fonts.body,
-            fontSize: 15,
-            color: Colors.text,
-            paddingVertical: 10,
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: Colors.surfaceAlt,
+            borderWidth: 1,
+            borderColor: focused ? Colors.accent : Colors.border,
+            borderRadius: Radius.sm,
+            paddingHorizontal: 12,
+            gap: 8,
           }}
-        />
-        {hasQuery ? (
-          <Pressable onPress={() => setQuery("")} hitSlop={8} accessibilityLabel="Limpar busca">
-            <Ionicons name="close-circle" size={18} color={Colors.textMuted} />
-          </Pressable>
-        ) : null}
+        >
+          <Ionicons name="search" size={18} color={focused ? Colors.accent : Colors.textMuted} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Ex.: valeharts, caneca, helena..."
+            placeholderTextColor={Colors.textFaint}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="search"
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            onSubmitEditing={() => Keyboard.dismiss()}
+            style={{
+              flex: 1,
+              minHeight: 48,
+              fontFamily: Fonts.body,
+              fontSize: 15,
+              color: Colors.text,
+              paddingVertical: 10,
+            }}
+          />
+          {hasQuery ? (
+            <Pressable onPress={() => setQuery("")} hitSlop={8} accessibilityLabel="Limpar busca">
+              <Ionicons name="close-circle" size={18} color={Colors.textMuted} />
+            </Pressable>
+          ) : null}
+        </View>
+
+        <Pressable
+          onPress={() => Keyboard.dismiss()}
+          accessibilityRole="button"
+          accessibilityLabel="Buscar"
+          style={({ pressed }) => [
+            {
+              height: 48,
+              paddingHorizontal: 18,
+              borderRadius: Radius.sm,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: Colors.accent,
+              opacity: pressed ? 0.85 : 1,
+              shadowColor: Colors.accent,
+              shadowOpacity: 0.45,
+              shadowRadius: 8,
+              shadowOffset: { width: 0, height: 4 },
+              elevation: 6,
+            },
+          ]}
+        >
+          <Text
+            style={{
+              fontFamily: Fonts.bodyBold,
+              fontSize: 13,
+              letterSpacing: 1.2,
+              textTransform: "uppercase",
+              color: Colors.onAccent,
+            }}
+          >
+            Buscar
+          </Text>
+        </Pressable>
       </View>
 
       {hasQuery ? (
@@ -122,11 +179,41 @@ export default function SearchScreen() {
 
       <View style={{ marginTop: hasQuery ? 0 : 8 }}>
         {!hasQuery ? (
-          <EmptyState
-            icon="search-outline"
-            title="O que você procura?"
-            message="Busque por título, autor, obra ou universo do catálogo Cliffhanger."
-          />
+          <View
+            style={{
+              marginHorizontal: ScreenPadding,
+              borderWidth: 1,
+              borderColor: Colors.border,
+              borderRadius: Radius.lg,
+              paddingVertical: 36,
+              paddingHorizontal: 20,
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: Fonts.display,
+                fontSize: 22,
+                letterSpacing: 1.2,
+                color: Colors.text,
+                textAlign: "center",
+              }}
+            >
+              DIGITE ALGO PARA COMEÇAR
+            </Text>
+            <Text
+              style={{
+                fontFamily: Fonts.body,
+                fontSize: 13.5,
+                lineHeight: 19,
+                color: Colors.textMuted,
+                textAlign: "center",
+              }}
+            >
+              A busca é global e retorna obras, produtos, autores e universos ao mesmo tempo.
+            </Text>
+          </View>
         ) : (
           <ProductGrid
             products={results}
