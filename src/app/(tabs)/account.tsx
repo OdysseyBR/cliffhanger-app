@@ -161,6 +161,12 @@ export default function AccountScreen() {
               subtitle="E-books e audiobooks com progresso."
               onPress={() => router.push("/library")}
             />
+            <NavCard
+              icon="shield-checkmark-outline"
+              title="Segurança"
+              subtitle="Senha, e-mail, sessões e exclusão da conta."
+              onPress={() => router.push("/security")}
+            />
           </SectionBlock>
 
           <Button label="Sair da conta" variant="secondary" onPress={() => void logOut()} />

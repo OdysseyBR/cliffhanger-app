@@ -28,7 +28,7 @@ export class ApiError extends Error {
 
 interface RequestOptions {
   token?: string;
-  method?: "GET" | "POST" | "PUT";
+  method?: "GET" | "POST" | "PUT" | "DELETE";
   body?: unknown;
 }
 
@@ -189,4 +189,52 @@ export function loadOrders(token: string): Promise<{ orders: Order[] }> {
 /** Endereços salvos da conta — pré-preenchimento do checkout (§7.2). */
 export function loadSavedAddresses(token: string): Promise<{ addresses: SavedAddress[] }> {
   return request<{ addresses: SavedAddress[] }>("/api/account/addresses", { token });
+}
+
+// ---------------------------------------------------------------------------
+// Segurança da conta (Etapa C) — registry de sessões + exclusão total
+// ---------------------------------------------------------------------------
+
+export interface AccountSession {
+  sid: string;
+  device: string;
+  /** IP mascrado no servidor (189.42.*.*) */
+  ip: string;
+  firstSeen: string;
+  lastSeen: string;
+}
+
+/** Lista os dispositivos registrados (GET /api/account/sessions). */
+export function loadSessions(token: string): Promise<{ sessions: AccountSession[] }> {
+  return request<{ sessions: AccountSession[] }>("/api/account/sessions", { token });
+}
+
+/** Registra/atualiza a sessão deste dispositivo (POST — throttle 5 min). */
+export function registerSession(
+  token: string,
+  payload: { sid: string; device: string },
+): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>("/api/account/sessions", {
+    method: "POST",
+    body: payload,
+    token,
+  });
+}
+
+/** Sai só deste dispositivo (DELETE ?sid= — no logout). */
+export function leaveSession(token: string, sid: string): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>(
+    `/api/account/sessions?sid=${encodeURIComponent(sid)}`,
+    { method: "DELETE", token },
+  );
+}
+
+/** Revoga os refresh tokens de todos os dispositivos (DELETE sem sid). */
+export function revokeAllSessions(token: string): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>("/api/account/sessions", { method: "DELETE", token });
+}
+
+/** Exclusão completa da conta (Firestore + Auth + adminUsers). */
+export function deleteAccount(token: string): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>("/api/account", { method: "DELETE", token });
 }

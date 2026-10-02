@@ -7,10 +7,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createUserWithEmailAndPassword,
+  EmailAuthProvider,
   onAuthStateChanged,
+  reauthenticateWithCredential,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
+  updatePassword,
   updateProfile,
 } from "firebase/auth";
 import {
@@ -25,6 +29,13 @@ import {
 } from "react";
 
 import { auth } from "./auth";
+import { ApiError, deleteAccount as deleteAccountApi } from "./api";
+import {
+  leaveSession as leaveDeviceSession,
+  registerSession as registerDeviceSession,
+  resetSessionClock,
+  revokeSessions as revokeDeviceSessions,
+} from "./device";
 import { firebaseEnabled } from "./firebase";
 import { removePushToken } from "./notificationsStore";
 import { readWishlist, writeWishlist } from "./wishlist";
@@ -34,6 +45,8 @@ export interface AuthUser {
   email: string | null;
   displayName: string | null;
   emailVerified: boolean;
+  /** provedores vinculados: password, google.com, facebook.com… */
+  providers: string[];
 }
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
@@ -54,6 +67,14 @@ interface AuthContextValue {
   toggleWishlist: (productId: string) => Promise<void>;
   /** ID token da sessão para as APIs autenticadas (Bearer) */
   getIdToken: () => Promise<string | null>;
+  /** segurança (Etapa C): altera senha com reautenticação inline */
+  changePassword: (currentPassword: string, newPassword: string) => Promise<AuthResult>;
+  /** reenvia o e-mail de verificação */
+  verifyEmail: () => Promise<AuthResult>;
+  /** encerra as sessões de todos os dispositivos (9.5) */
+  revokeSessions: () => Promise<AuthResult>;
+  /** exclusão completa da conta: reauth + API + limpeza local (LGPD §10) */
+  deleteAccount: (currentPassword: string) => Promise<AuthResult>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -78,6 +99,8 @@ function mapAuthError(code: string): string {
       return "Sem conexão. Verifique sua internet.";
     case "auth/user-disabled":
       return "Esta conta foi desativada.";
+    case "auth/requires-recent-login":
+      return "Confirme sua identidade: informe sua senha novamente.";
     default:
       return "Não foi possível concluir. Tente novamente.";
   }
@@ -88,12 +111,14 @@ function toAuthUser(user: {
   email: string | null;
   displayName: string | null;
   emailVerified: boolean;
+  providerData: readonly { providerId: string }[];
 }): AuthUser {
   return {
     uid: user.uid,
     email: user.email,
     displayName: user.displayName,
     emailVerified: user.emailVerified,
+    providers: user.providerData.map((provider) => provider.providerId),
   };
 }
 
@@ -171,6 +196,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       if (next) {
         void syncWishlist(next);
+        // registra este dispositivo no registry de sessões (throttle 5 min)
+        u?.getIdToken()
+          .then((token) => registerDeviceSession(token))
+          .catch(() => undefined);
       } else {
         syncRef.current = null;
       }
@@ -200,6 +229,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (trimmed && cred.user) {
           await updateProfile(cred.user, { displayName: trimmed });
         }
+        // verificação automática no cadastro (Etapa C) — melhor esforço: se o
+        // envio falhar, o botão "Verificar e-mail agora" cobre o caso
+        try {
+          await sendEmailVerification(cred.user);
+        } catch {
+          /* sem e-mail agora — usuário pode reenviar depois */
+        }
         return { ok: true };
       } catch (e) {
         return { ok: false, error: mapAuthError((e as { code?: string }).code ?? "") };
@@ -226,10 +262,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logOut = useCallback(async () => {
     if (!auth) return;
     try {
-      // remove o token push deste dispositivo ANTES de encerrar a sessão
-      // (a escrita no Firestore precisa do usuário ainda autenticado)
-      const uid = auth.currentUser?.uid;
-      if (uid) await removePushToken(uid);
+      const current = auth.currentUser;
+      if (current) {
+        // remove o token push deste dispositivo ANTES de encerrar a sessão
+        // (a escrita no Firestore precisa do usuário ainda autenticado)
+        await removePushToken(current.uid);
+        // apaga este dispositivo do registry de sessões (best-effort)
+        try {
+          const token = await current.getIdToken();
+          await leaveDeviceSession(token);
+        } catch {
+          /* melhor esforço — o registro envelhece sozinho */
+        }
+      }
       await signOut(auth);
     } catch {
       /* sessão já encerrada */
@@ -266,6 +311,126 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /** Altera a senha SEMPRE reautenticando antes (Etapa C — inline). */
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string): Promise<AuthResult> => {
+      const current = auth?.currentUser;
+      if (!current) return { ok: false, error: "Nenhuma sessão ativa." };
+      if (!current.email) {
+        return { ok: false, error: "Esta conta não usa senha — entre pelo Google/Facebook." };
+      }
+      if (!currentPassword) return { ok: false, error: "Informe sua senha atual." };
+      if (newPassword.length < 6) {
+        return { ok: false, error: "A nova senha precisa de pelo menos 6 caracteres." };
+      }
+      setBusy(true);
+      try {
+        await reauthenticateWithCredential(
+          current,
+          EmailAuthProvider.credential(current.email, currentPassword),
+        );
+        await updatePassword(current, newPassword);
+        return { ok: true };
+      } catch (e) {
+        const code = (e as { code?: string }).code ?? "";
+        if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
+          return { ok: false, error: "Senha atual incorreta." };
+        }
+        return { ok: false, error: mapAuthError(code) };
+      } finally {
+        setBusy(false);
+      }
+    },
+    [],
+  );
+
+  /** Reenvia o e-mail de verificação (extra da Etapa C). */
+  const verifyEmail = useCallback(async (): Promise<AuthResult> => {
+    const current = auth?.currentUser;
+    if (!current) return { ok: false, error: "Nenhuma sessão ativa." };
+    setBusy(true);
+    try {
+      await sendEmailVerification(current);
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: mapAuthError((e as { code?: string }).code ?? "") };
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  /** Revoga os refresh tokens de todos os dispositivos (9.5) e sai aqui. */
+  const revokeSessions = useCallback(async (): Promise<AuthResult> => {
+    const current = auth?.currentUser;
+    if (!auth || !current) return { ok: false, error: "Nenhuma sessão ativa." };
+    setBusy(true);
+    try {
+      const token = await current.getIdToken();
+      await revokeDeviceSessions(token);
+      // o token deste dispositivo também foi revogado — sai por aqui
+      await removePushToken(current.uid);
+      await signOut(auth);
+      return { ok: true };
+    } catch (e) {
+      if (e instanceof ApiError) return { ok: false, error: e.message };
+      return { ok: false, error: mapAuthError((e as { code?: string }).code ?? "") };
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  /**
+   * Exclusão completa (LGPD §10): reautenticação obrigatória → remove o token
+   * push (senão users/{uid} seria recriado depois) → DELETE /api/account no
+   * backend (Firestore + Auth + adminUsers) → espelhos locais → signOut.
+   */
+  const deleteAccount = useCallback(
+    async (currentPassword: string): Promise<AuthResult> => {
+      const current = auth?.currentUser;
+      if (!auth || !current) return { ok: false, error: "Nenhuma sessão ativa." };
+      const hasPassword = current.providerData.some(
+        (provider) => provider.providerId === "password",
+      );
+      if (!hasPassword || !current.email) {
+        return {
+          ok: false,
+          error: "Esta conta não usa senha — exclua pela loja no navegador.",
+        };
+      }
+      if (!currentPassword) return { ok: false, error: "Informe sua senha atual." };
+      setBusy(true);
+      try {
+        // 1) reautenticação sempre exigida antes de destruir a conta
+        await reauthenticateWithCredential(
+          current,
+          EmailAuthProvider.credential(current.email, currentPassword),
+        );
+        const idToken = await current.getIdToken();
+        // 2) token push local/remoto enquanto users/{uid} ainda existe
+        await removePushToken(current.uid);
+        // 3) exclusão completa no backend (idempotente)
+        await deleteAccountApi(idToken);
+        // 4) espelhos locais — sessão encerra via onAuthStateChanged
+        localIdsRef.current = [];
+        setWishlist([]);
+        persistLocal([]);
+        await resetSessionClock();
+        await signOut(auth);
+        return { ok: true };
+      } catch (e) {
+        const code = (e as { code?: string }).code ?? "";
+        if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
+          return { ok: false, error: "Senha atual incorreta." };
+        }
+        if (e instanceof ApiError) return { ok: false, error: e.message };
+        return { ok: false, error: mapAuthError(code) };
+      } finally {
+        setBusy(false);
+      }
+    },
+    [persistLocal],
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -278,6 +443,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logOut,
       toggleWishlist,
       getIdToken,
+      changePassword,
+      verifyEmail,
+      revokeSessions,
+      deleteAccount,
     }),
     [
       user,
@@ -290,6 +459,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logOut,
       toggleWishlist,
       getIdToken,
+      changePassword,
+      verifyEmail,
+      revokeSessions,
+      deleteAccount,
     ],
   );
 
