@@ -1,7 +1,14 @@
 /**
  * Botão da identidade (primário = destaque amarelo; secundário = contorno roxo).
  */
-import { ActivityIndicator, Pressable, Text, type StyleProp, type ViewStyle } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  Text,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
+import type { ReactNode } from "react";
 
 import { Colors, Fonts, Radius } from "@/constants/theme";
 
@@ -13,6 +20,8 @@ interface ButtonProps {
   disabled?: boolean;
   /** brilho amarelo no botão primário (CTAs de conversão) */
   glow?: boolean;
+  /** ícone monocromático à esquerda do rótulo (SVG da identidade) */
+  icon?: ReactNode;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -23,6 +32,7 @@ export function Button({
   loading = false,
   disabled = false,
   glow = false,
+  icon,
   style,
 }: ButtonProps) {
   const primary = variant === "primary";
@@ -61,7 +71,9 @@ export function Button({
     >
       {loading ? (
         <ActivityIndicator size="small" color={primary ? Colors.onAccent : Colors.accent} />
-      ) : null}
+      ) : (
+        icon ?? null
+      )}
       <Text
         style={{
           fontFamily: Fonts.bodyBold,

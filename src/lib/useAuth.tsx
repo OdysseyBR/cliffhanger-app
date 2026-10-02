@@ -8,11 +8,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createUserWithEmailAndPassword,
   EmailAuthProvider,
+  GoogleAuthProvider,
   onAuthStateChanged,
   reauthenticateWithCredential,
   sendEmailVerification,
   sendPasswordResetEmail,
+  signInWithCredential,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signOut,
   updatePassword,
   updateProfile,
@@ -62,6 +65,10 @@ interface AuthContextValue {
   wishlist: string[];
   signIn: (email: string, password: string) => Promise<AuthResult>;
   signUp: (name: string, email: string, password: string) => Promise<AuthResult>;
+  /** login Google nativo (Etapa D): consuma o id_token do AuthSession */
+  googleLogin: (idToken: string) => Promise<AuthResult>;
+  /** login Google na web (Etapa D): popup, mesmo fluxo da loja */
+  googlePopup: () => Promise<AuthResult>;
   resetPassword: (email: string) => Promise<AuthResult>;
   logOut: () => Promise<void>;
   toggleWishlist: (productId: string) => Promise<void>;
@@ -101,6 +108,15 @@ function mapAuthError(code: string): string {
       return "Esta conta foi desativada.";
     case "auth/requires-recent-login":
       return "Confirme sua identidade: informe sua senha novamente.";
+    case "auth/account-exists-with-different-credential":
+      return "Já existe uma conta com este e-mail — entre com e-mail e senha.";
+    case "auth/unauthorized-domain":
+      return "Login Google indisponível neste endereço.";
+    case "auth/popup-blocked":
+      return "O navegador bloqueou a janela de login — permita pop-ups.";
+    case "auth/cancelled-popup-request":
+    case "auth/popup-closed-by-user":
+      return ""; // cancelado pelo usuário — sem banner
     default:
       return "Não foi possível concluir. Tente novamente.";
   }
@@ -211,6 +227,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setBusy(true);
     try {
       await signInWithEmailAndPassword(auth, email.trim(), password);
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: mapAuthError((e as { code?: string }).code ?? "") };
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  /** Login com Google no app nativo (Etapa D) — id_token do AuthSession → Firebase. */
+  const googleLogin = useCallback(async (idToken: string): Promise<AuthResult> => {
+    if (!auth) return { ok: false, error: "Login indisponível — configure o .env do app." };
+    if (!idToken) return { ok: false, error: "Não foi possível concluir. Tente novamente." };
+    setBusy(true);
+    try {
+      await signInWithCredential(auth, GoogleAuthProvider.credential(idToken));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: mapAuthError((e as { code?: string }).code ?? "") };
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  /** Login com Google na web (preview) — popup, igual ao site. */
+  const googlePopup = useCallback(async (): Promise<AuthResult> => {
+    if (!auth) return { ok: false, error: "Login indisponível — configure o .env do app." };
+    setBusy(true);
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
       return { ok: true };
     } catch (e) {
       return { ok: false, error: mapAuthError((e as { code?: string }).code ?? "") };
@@ -439,6 +484,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       wishlist,
       signIn,
       signUp,
+      googleLogin,
+      googlePopup,
       resetPassword,
       logOut,
       toggleWishlist,
@@ -455,6 +502,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       wishlist,
       signIn,
       signUp,
+      googleLogin,
+      googlePopup,
       resetPassword,
       logOut,
       toggleWishlist,

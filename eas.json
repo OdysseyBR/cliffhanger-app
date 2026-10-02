@@ -11,7 +11,8 @@
         "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "cliffhanger-store.firebasestorage.app",
         "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "587752255188",
         "EXPO_PUBLIC_FIREBASE_APP_ID": "1:587752255188:web:edd9c77f89fbf8f8031541",
-        "EXPO_PUBLIC_STORE_URL": "https://www.cliffhangerstore.xyz"
+        "EXPO_PUBLIC_STORE_URL": "https://www.cliffhangerstore.xyz",
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "587752255188-f07427pb5qehep6gqce5l62h097sr0ga.apps.googleusercontent.com"
       }
     },
     "development": {

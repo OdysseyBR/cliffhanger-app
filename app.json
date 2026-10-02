@@ -22,6 +22,17 @@
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": ["DEFAULT", "BROWSABLE"],
+          "data": [
+            {
+              "scheme": "com.googleusercontent.apps.587752255188-f07427pb5qehep6gqce5l62h097sr0ga"
+            }
+          ]
+        }
       ]
     },
     "web": {

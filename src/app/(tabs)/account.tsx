@@ -9,6 +9,7 @@ import { Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
+import { GoogleButton } from "@/components/GoogleButton";
 import { Loading, Screen } from "@/components/Screen";
 import { Segmented } from "@/components/Segmented";
 import { Wordmark } from "@/components/Wordmark";
@@ -335,6 +336,19 @@ export default function AccountScreen() {
             </Text>
           </Pressable>
         ) : null}
+
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <View style={{ flex: 1, height: 1, backgroundColor: Colors.border }} />
+          <Text style={{ fontFamily: Fonts.body, fontSize: 12, color: Colors.textFaint }}>ou</Text>
+          <View style={{ flex: 1, height: 1, backgroundColor: Colors.border }} />
+        </View>
+
+        <GoogleButton
+          onError={(message) => {
+            setNotice(null);
+            setError(message);
+          }}
+        />
 
         <Text
           style={{
