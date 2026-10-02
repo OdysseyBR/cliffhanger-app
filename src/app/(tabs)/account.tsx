@@ -9,6 +9,7 @@ import { Pressable, Text, View } from "react-native";
 
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
+import { FacebookButton } from "@/components/FacebookButton";
 import { GoogleButton } from "@/components/GoogleButton";
 import { Loading, Screen } from "@/components/Screen";
 import { Segmented } from "@/components/Segmented";
@@ -344,6 +345,13 @@ export default function AccountScreen() {
         </View>
 
         <GoogleButton
+          onError={(message) => {
+            setNotice(null);
+            setError(message);
+          }}
+        />
+
+        <FacebookButton
           onError={(message) => {
             setNotice(null);
             setError(message);

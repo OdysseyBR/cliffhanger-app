@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createUserWithEmailAndPassword,
   EmailAuthProvider,
+  FacebookAuthProvider,
   GoogleAuthProvider,
   onAuthStateChanged,
   reauthenticateWithCredential,
@@ -69,6 +70,10 @@ interface AuthContextValue {
   googleLogin: (idToken: string) => Promise<AuthResult>;
   /** login Google na web (Etapa D): popup, mesmo fluxo da loja */
   googlePopup: () => Promise<AuthResult>;
+  /** login Facebook nativo (Etapa E): consuma o access_token do AuthSession */
+  facebookLogin: (accessToken: string) => Promise<AuthResult>;
+  /** login Facebook na web (Etapa E): popup, mesmo fluxo da loja */
+  facebookPopup: () => Promise<AuthResult>;
   resetPassword: (email: string) => Promise<AuthResult>;
   logOut: () => Promise<void>;
   toggleWishlist: (productId: string) => Promise<void>;
@@ -112,6 +117,8 @@ function mapAuthError(code: string): string {
       return "Já existe uma conta com este e-mail — entre com e-mail e senha.";
     case "auth/unauthorized-domain":
       return "Login Google indisponível neste endereço.";
+    case "auth/operation-not-allowed":
+      return "Este login está indisponível no momento — tente com e-mail e senha.";
     case "auth/popup-blocked":
       return "O navegador bloqueou a janela de login — permita pop-ups.";
     case "auth/cancelled-popup-request":
@@ -256,6 +263,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setBusy(true);
     try {
       await signInWithPopup(auth, new GoogleAuthProvider());
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: mapAuthError((e as { code?: string }).code ?? "") };
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  /** Login com Facebook no app nativo (Etapa E) — access_token do AuthSession → Firebase. */
+  const facebookLogin = useCallback(async (accessToken: string): Promise<AuthResult> => {
+    if (!auth) return { ok: false, error: "Login indisponível — configure o .env do app." };
+    if (!accessToken) return { ok: false, error: "Não foi possível concluir. Tente novamente." };
+    setBusy(true);
+    try {
+      await signInWithCredential(auth, FacebookAuthProvider.credential(accessToken));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: mapAuthError((e as { code?: string }).code ?? "") };
+    } finally {
+      setBusy(false);
+    }
+  }, []);
+
+  /** Login com Facebook na web (preview) — popup, igual ao site. */
+  const facebookPopup = useCallback(async (): Promise<AuthResult> => {
+    if (!auth) return { ok: false, error: "Login indisponível — configure o .env do app." };
+    setBusy(true);
+    try {
+      await signInWithPopup(auth, new FacebookAuthProvider());
       return { ok: true };
     } catch (e) {
       return { ok: false, error: mapAuthError((e as { code?: string }).code ?? "") };
@@ -486,6 +522,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       googleLogin,
       googlePopup,
+      facebookLogin,
+      facebookPopup,
       resetPassword,
       logOut,
       toggleWishlist,
@@ -504,6 +542,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUp,
       googleLogin,
       googlePopup,
+      facebookLogin,
+      facebookPopup,
       resetPassword,
       logOut,
       toggleWishlist,

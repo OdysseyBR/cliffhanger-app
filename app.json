@@ -32,6 +32,15 @@
               "scheme": "com.googleusercontent.apps.587752255188-f07427pb5qehep6gqce5l62h097sr0ga"
             }
           ]
+        },
+        {
+          "action": "VIEW",
+          "category": ["DEFAULT", "BROWSABLE"],
+          "data": [
+            {
+              "scheme": "fb1418847273671976"
+            }
+          ]
         }
       ]
     },
