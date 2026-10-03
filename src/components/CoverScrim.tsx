@@ -10,8 +10,7 @@ export function CoverScrim({ height = 104 }: { height?: number }) {
   const id = `s-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   return (
     <View
-      pointerEvents="none"
-      style={{ position: "absolute", left: 0, right: 0, bottom: 0, height }}
+      style={{ pointerEvents: "none", position: "absolute", left: 0, right: 0, bottom: 0, height }}
     >
       <Svg width="100%" height="100%" viewBox={`0 0 100 ${height}`} preserveAspectRatio="none">
         <Defs>
