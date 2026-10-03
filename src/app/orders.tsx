@@ -8,6 +8,7 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 
+import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { Loading, Screen } from "@/components/Screen";
 import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
@@ -238,6 +239,14 @@ export default function OrdersScreen() {
                   {order.address.state}
                 </Text>
               </View>
+            ) : null}
+
+            {order.status === "aguardando_pagamento" ? (
+              <Button
+                label="Pagar agora"
+                onPress={() => router.push({ pathname: "/pay/[id]", params: { id: order.id } })}
+                style={{ minHeight: 44 }}
+              />
             ) : null}
           </View>
         ))}

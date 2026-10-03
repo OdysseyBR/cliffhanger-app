@@ -10,22 +10,36 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Pressable, Text, View, type ViewStyle } from "react-native";
 
 import { Button } from "@/components/Button";
+import { CardForm, type CardFormHandle } from "@/components/CardForm";
 import { EmptyState } from "@/components/EmptyState";
 import { Field } from "@/components/Field";
+import { PixPanel } from "@/components/PixPanel";
 import { Loading, Screen } from "@/components/Screen";
 import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
 import {
   ApiError,
+  chargeCard,
+  chargePix,
   createOrder,
   loadSavedAddresses,
   quoteShipping,
   validateCoupon,
 } from "@/lib/api";
 import { formatBRL } from "@/lib/catalog";
-import type { CheckoutPayload, OrderCreated, PaymentMethod, ShippingQuote } from "@/lib/types";
+import { formatTaxIdInput, isValidTaxId, taxIdDigits } from "@/lib/format";
+import type {
+  CardPayload,
+  CheckoutPayload,
+  OrderCreated,
+  OrderStatus,
+  PaymentMethod,
+  PixCharge,
+  ShippingQuote,
+} from "@/lib/types";
 import { useAuth } from "@/lib/useAuth";
 import { useCart } from "@/lib/useCart";
 import { useCatalog } from "@/lib/useCatalog";
+import { usePaymentPolling } from "@/lib/usePaymentPolling";
 
 type Step = "dados" | "entrega" | "pagamento" | "revisao" | "pedido";
 type FormStep = Exclude<Step, "pedido">;
@@ -101,6 +115,8 @@ function CheckoutFlow() {
   const [name, setName] = useState(user?.displayName ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [phone, setPhone] = useState("");
+  /** §7.4 — CPF/CNPJ: sem ele a cobrança PagBank recusa (mesma regra do site). */
+  const [taxId, setTaxId] = useState("");
   const [dadosError, setDadosError] = useState<string | null>(null);
   // entrega
   const [cep, setCep] = useState("");
@@ -123,6 +139,11 @@ function CheckoutFlow() {
   );
   const [couponBusy, setCouponBusy] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
+  // cartão — o número vive só no CardForm até virar criptograma (§7.4)
+  const cardRef = useRef<CardFormHandle>(null);
+  const [preparingCard, setPreparingCard] = useState(false);
+  /** criptograma pronto (gerado ao avançar para Revisão) */
+  const [cardPayload, setCardPayload] = useState<CardPayload | null>(null);
   // revisão/pedido
   const [giftOn, setGiftOn] = useState(false);
   const [giftTo, setGiftTo] = useState("");
@@ -130,7 +151,14 @@ function CheckoutFlow() {
   const [giftWrap, setGiftWrap] = useState(true);
   const [placing, setPlacing] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
-  const [result, setResult] = useState<OrderCreated | null>(null);
+  /** pedido já criado — reaproveitado quando a cobrança falha (mesmo método) */
+  const [createdOrder, setCreatedOrder] = useState<
+    (OrderCreated & { method: PaymentMethod }) | null
+  >(null);
+  /** estado da cobrança (§7.4) — o polling da tela muda sozinho */
+  const [payStatus, setPayStatus] = useState<OrderStatus | null>(null);
+  const [pixCharge, setPixCharge] = useState<PixCharge | null>(null);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   /** se o pedido confirmado tinha itens físicos (snapshot antes do clear) */
   const [placedPhysical, setPlacedPhysical] = useState(false);
 
@@ -152,6 +180,14 @@ function CheckoutFlow() {
   const shippingPrice = hasPhysical && quoteReady ? (selectedOption?.price ?? 0) : 0;
   const discount = appliedCoupon?.discount ?? 0;
   const total = Math.max(0, subtotal - discount) + shippingPrice;
+
+  /** Rótulo de pagamento da revisão/pedido (com parcelas, quando houver). */
+  const paymentLabel = (base: number) =>
+    paymentMethod === "credito" && (cardPayload?.installments ?? 1) > 1
+      ? `${PAYMENT_LABEL.credito} · ${cardPayload!.installments}x de ${formatBRL(
+          base / cardPayload!.installments,
+        )}`
+      : PAYMENT_LABEL[paymentMethod];
 
   // Cotação de frete com debounce (mesmo comportamento do checkout web)
   useEffect(() => {
@@ -189,6 +225,10 @@ function CheckoutFlow() {
       }
       if (!email.includes("@")) {
         setDadosError("Informe um e-mail válido.");
+        return;
+      }
+      if (!isValidTaxId(taxId)) {
+        setDadosError("CPF/CNPJ inválido — confira os números digitados.");
         return;
       }
       setDadosError(null);
@@ -250,6 +290,30 @@ function CheckoutFlow() {
     if (step === "pagamento") setStep("revisao");
   };
 
+  /**
+   * Avanço do passo Pagamento (§7.4): PIX segue direto; cartão valida e
+   * criptografa primeiro — erro de cartão aparece aqui, antes do pedido
+   * existir (no site o pedido é criado antes e fica órfão em caso de recusa).
+   */
+  const goNextPagamento = () => {
+    if (paymentMethod === "pix") {
+      setStep("revisao");
+      return;
+    }
+    setPreparingCard(true);
+    void (async () => {
+      try {
+        const payload = await cardRef.current?.encrypt();
+        if (payload) {
+          setCardPayload(payload);
+          setStep("revisao");
+        }
+      } finally {
+        setPreparingCard(false);
+      }
+    })();
+  };
+
   const goBack = () => {
     const idx = step === "pedido" ? -1 : STEPS.indexOf(step as FormStep);
     if (idx > 0) setStep(STEPS[idx - 1]);
@@ -276,46 +340,91 @@ function CheckoutFlow() {
     setCouponError(null);
   };
 
+  /** Cobrança criada e pendente (§7.4) — limpa o carrinho e abre o passo Pedido. */
+  const finishWaiting = (status: OrderStatus, message?: string) => {
+    clear();
+    setPayStatus(status);
+    setPendingMessage(message ?? null);
+    setStep("pedido");
+  };
+
+  /** Pagamento aprovado na hora (cartão) — libera tudo e conclui. */
+  const finishApproved = () => {
+    clear();
+    setPayStatus("pagamento_aprovado");
+    setPendingMessage(null);
+    setStep("pedido");
+  };
+
   const placeOrder = async () => {
     if (giftOn && !giftTo.trim()) {
       setOrderError("Informe quem vai receber o presente (ou desmarque a opção).");
+      return;
+    }
+    if (!isValidTaxId(taxId)) {
+      setOrderError("CPF/CNPJ inválido — volte ao passo Dados e confira.");
+      return;
+    }
+    if (paymentMethod !== "pix" && !cardPayload) {
+      setOrderError("Preencha os dados do cartão no passo Pagamento.");
       return;
     }
     setPlacing(true);
     setOrderError(null);
     try {
       const token = await getIdToken();
-      const payload: CheckoutPayload = {
-        items: lines.map((l) => ({ productId: l.product!.id, qty: l.item.qty })),
-        email: email.trim(),
-        name: name.trim() || undefined,
-        phone: phone.trim() || undefined,
-        paymentMethod,
-        ...(hasPhysical
-          ? {
-              address: {
-                cep: digits,
-                street: street.trim(),
-                number: number.trim(),
-                complement: complement.trim() || undefined,
-                neighborhood: neighborhood.trim(),
-                city: city.trim(),
-                state: state.trim().toUpperCase(),
-              },
-              shippingOption,
-            }
-          : {}),
-        ...(appliedCoupon ? { coupon: appliedCoupon.code } : {}),
-        ...(giftOn && giftTo.trim()
-          ? { gift: { to: giftTo.trim(), message: giftMessage.trim(), wrap: giftWrap } }
-          : {}),
-      };
-      const order = await createOrder(payload, token ?? undefined);
-      setPlacedPhysical(hasPhysical);
-      clear();
-      setResult(order);
-      setStep("pedido");
+      // 1) pedido — reaproveitado quando a cobrança anterior falhou e o
+      // método não mudou (senão, um novo pedido seria criado)
+      let base = createdOrder?.method === paymentMethod ? createdOrder : null;
+      if (createdOrder && !base) setCreatedOrder(null);
+      if (!base) {
+        const payload: CheckoutPayload = {
+          items: lines.map((l) => ({ productId: l.product!.id, qty: l.item.qty })),
+          email: email.trim(),
+          name: name.trim() || undefined,
+          phone: phone.trim() || undefined,
+          paymentMethod,
+          payment: { taxId: taxIdDigits(taxId) },
+          ...(hasPhysical
+            ? {
+                address: {
+                  cep: digits,
+                  street: street.trim(),
+                  number: number.trim(),
+                  complement: complement.trim() || undefined,
+                  neighborhood: neighborhood.trim(),
+                  city: city.trim(),
+                  state: state.trim().toUpperCase(),
+                },
+                shippingOption,
+              }
+            : {}),
+          ...(appliedCoupon ? { coupon: appliedCoupon.code } : {}),
+          ...(giftOn && giftTo.trim()
+            ? { gift: { to: giftTo.trim(), message: giftMessage.trim(), wrap: giftWrap } }
+            : {}),
+        };
+        const order = await createOrder(payload, token ?? undefined);
+        base = { ...order, method: paymentMethod };
+        setCreatedOrder(base);
+        setPlacedPhysical(hasPhysical);
+      }
+
+      // 2) cobrança (§7.4) — PIX gera QR Code; cartão cobra em um passo
+      if (paymentMethod === "pix") {
+        const outcome = await chargePix(base.orderId);
+        if (!outcome.pix) {
+          throw new ApiError("Não foi possível gerar o código PIX — tente novamente.");
+        }
+        setPixCharge(outcome.pix);
+        finishWaiting(outcome.status, outcome.message);
+        return;
+      }
+      const outcome = await chargeCard(base.orderId, paymentMethod, cardPayload!);
+      if (outcome.status === "pagamento_aprovado") finishApproved();
+      else finishWaiting(outcome.status, outcome.message);
     } catch (cause: unknown) {
+      // o pedido (se criado) permanece — a revisão permite tentar a cobrança de novo
       setOrderError(
         cause instanceof ApiError ? cause.message : "Não foi possível concluir o pedido.",
       );
@@ -323,6 +432,13 @@ function CheckoutFlow() {
       setPlacing(false);
     }
   };
+
+  // §7.4 — polling: o webhook é o caminho feliz; aqui a tela muda sozinha.
+  const awaitingOrderId =
+    step === "pedido" && payStatus === "aguardando_pagamento" && createdOrder
+      ? createdOrder.orderId
+      : null;
+  usePaymentPolling(awaitingOrderId, setPayStatus);
 
   // Guardas de conteúdo — depois de todos os hooks acima.
   if (loading && !catalog) {
@@ -360,6 +476,7 @@ function CheckoutFlow() {
   }
 
   const stepIndex = step === "pedido" ? -1 : STEPS.indexOf(step as FormStep);
+  const approved = payStatus === "pagamento_aprovado";
 
   return (
     <Screen title="Checkout">
@@ -423,6 +540,14 @@ function CheckoutFlow() {
               onChangeText={(text) => setPhone(formatPhoneInput(text))}
               placeholder="(11) 99999-9999"
               keyboardType="phone-pad"
+            />
+            <Field
+              label="CPF ou CNPJ"
+              value={taxId}
+              onChangeText={(text) => setTaxId(formatTaxIdInput(text))}
+              placeholder="000.000.000-00"
+              keyboardType="number-pad"
+              maxLength={18}
             />
             <Button label="Continuar para entrega" glow onPress={goNext} />
           </View>
@@ -543,8 +668,9 @@ function CheckoutFlow() {
         ) : null}
 
         {/* -------------------------------------------------------- pagamento */}
-        {step === "pagamento" ? (
-          <View style={{ gap: 14 }}>
+        {/* fica montado entre os passos para não perder o cartão digitado */}
+        {step !== "pedido" ? (
+          <View style={{ gap: 14, display: step === "pagamento" ? "flex" : "none" }}>
             <StepHeading
               title="Pagamento"
               hint="Escolha como pagar e aplique um cupom, se tiver."
@@ -564,6 +690,10 @@ function CheckoutFlow() {
             <Text style={HINT}>
               Ambiente de demonstração (PagBank sandbox) — nenhum pagamento real é processado.
             </Text>
+
+            {paymentMethod !== "pix" ? (
+              <CardForm ref={cardRef} total={total} method={paymentMethod} holderDefault={name} />
+            ) : null}
 
             <View style={[CARD, { gap: 10 }]}>
               <Text style={{ fontFamily: Fonts.bodyBold, fontSize: 14, color: Colors.text }}>
@@ -619,7 +749,13 @@ function CheckoutFlow() {
               {couponError ? <ErrorText>{couponError}</ErrorText> : null}
             </View>
 
-            <Button label="Revisar pedido" glow onPress={goNext} />
+            <Button
+              label="Revisar pedido"
+              glow
+              onPress={goNextPagamento}
+              loading={preparingCard}
+              disabled={preparingCard}
+            />
           </View>
         ) : null}
 
@@ -668,7 +804,7 @@ function CheckoutFlow() {
                       : "A calcular"
                 }
               />
-              <SummaryLine label="Pagamento" value={PAYMENT_LABEL[paymentMethod]} />
+              <SummaryLine label="Pagamento" value={paymentLabel(total)} />
               <SummaryLine label="Total" value={formatBRL(total)} strong />
             </View>
 
@@ -755,19 +891,31 @@ function CheckoutFlow() {
         ) : null}
 
         {/* ------------------------------------------------------------ pedido */}
-        {step === "pedido" && result ? (
+        {step === "pedido" && createdOrder ? (
           <View style={{ gap: 14, alignItems: "center" }}>
             <View
               style={{
                 width: 64,
                 height: 64,
                 borderRadius: 32,
-                backgroundColor: Colors.accent,
+                backgroundColor: approved ? Colors.accent : "transparent",
+                borderWidth: approved ? 0 : 2,
+                borderColor: Colors.accent,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Ionicons name="checkmark" size={34} color={Colors.onAccent} />
+              <Ionicons
+                name={
+                  approved
+                    ? "checkmark"
+                    : paymentMethod === "pix"
+                      ? "qr-code-outline"
+                      : "card-outline"
+                }
+                size={34}
+                color={approved ? Colors.onAccent : Colors.accent}
+              />
             </View>
             <Text
               style={{
@@ -778,7 +926,7 @@ function CheckoutFlow() {
                 textAlign: "center",
               }}
             >
-              PEDIDO REALIZADO
+              {approved ? "PAGAMENTO APROVADO" : "PEDIDO REALIZADO"}
             </Text>
             <Text
               style={{
@@ -788,29 +936,37 @@ function CheckoutFlow() {
                 textAlign: "center",
               }}
             >
-              Pedido {result.code} · {formatBRL(result.total)}
+              Pedido {createdOrder.code} · {formatBRL(createdOrder.total)}
             </Text>
-            <StatusBadge label="Aguardando pagamento" />
+            <StatusBadge label={approved ? "Pagamento aprovado" : "Aguardando pagamento"} />
+
+            {!approved && paymentMethod === "pix" && pixCharge ? (
+              <PixPanel
+                orderId={createdOrder.orderId}
+                pix={pixCharge}
+                onRenew={setPixCharge}
+              />
+            ) : null}
 
             <View style={[CARD, { alignSelf: "stretch", gap: 10 }]}>
-              <SummaryLine label="Pagamento" value={PAYMENT_LABEL[paymentMethod]} />
-              {result.discount > 0 ? (
-                <SummaryLine label="Desconto" value={`−${formatBRL(result.discount)}`} />
+              <SummaryLine label="Pagamento" value={paymentLabel(createdOrder.total)} />
+              {createdOrder.discount > 0 ? (
+                <SummaryLine label="Desconto" value={`−${formatBRL(createdOrder.discount)}`} />
               ) : null}
               <SummaryLine
                 label="Frete"
                 value={
                   !placedPhysical
                     ? "Isento (digital)"
-                    : result.shipping > 0
-                      ? formatBRL(result.shipping)
+                    : createdOrder.shipping > 0
+                      ? formatBRL(createdOrder.shipping)
                       : "Grátis"
                 }
               />
-              <SummaryLine label="Total" value={formatBRL(result.total)} strong />
+              <SummaryLine label="Total" value={formatBRL(createdOrder.total)} strong />
             </View>
 
-            {result.digitalItems.length > 0 ? (
+            {approved && createdOrder.digitalItems.length > 0 ? (
               <Notice
                 icon={user ? "library-outline" : "person-circle-outline"}
                 text={
@@ -820,17 +976,21 @@ function CheckoutFlow() {
                 }
               />
             ) : null}
-            <Notice
-              icon="time-outline"
-              text={
-                paymentMethod === "pix"
-                  ? "Assim que o PIX for confirmado, o pedido sai de Aguardando pagamento — acompanhe em Meus pedidos."
-                  : "Após a confirmação do pagamento, acompanhe o status em Meus pedidos."
-              }
-            />
+            {!approved && paymentMethod === "pix" ? (
+              <Notice
+                icon="shield-checkmark-outline"
+                text="Assim que o PIX for confirmado, o pedido sai de Aguardando pagamento — a confirmação é automática."
+              />
+            ) : null}
+            {!approved && paymentMethod !== "pix" ? (
+              <Notice
+                icon="time-outline"
+                text={pendingMessage ?? "Após a confirmação do pagamento, acompanhe o status em Meus pedidos."}
+              />
+            ) : null}
 
             <View style={{ alignSelf: "stretch", gap: 10 }}>
-              {user && result.digitalItems.length > 0 ? (
+              {user && approved && createdOrder.digitalItems.length > 0 ? (
                 <Button
                   label="Ir para a biblioteca"
                   onPress={() => router.replace("/library")}
@@ -839,7 +999,9 @@ function CheckoutFlow() {
               {user ? (
                 <Button
                   label="Ver meus pedidos"
-                  variant={result.digitalItems.length > 0 ? "secondary" : "primary"}
+                  variant={
+                    approved && createdOrder.digitalItems.length > 0 ? "secondary" : "primary"
+                  }
                   onPress={() => router.replace("/orders")}
                 />
               ) : (

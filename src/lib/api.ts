@@ -2,16 +2,20 @@
  * Cliente da API pública da Cliffhanger Store (mesmo backend do site).
  * Endpoints: /api/products (catálogo), /api/library (sessão/progresso) e o
  * checkout — /api/shipping, /api/coupons/validate, /api/orders,
- * /api/orders/mine e /api/account/addresses.
+ * /api/orders/mine, /api/account/addresses e pagamento (§7.4):
+ * /api/payment/charge e /api/payment/status.
  */
 import { STORE_URL } from "./firebase";
 import type {
+  CardPayload,
   Catalog,
+  ChargeOutcome,
   CheckoutPayload,
   CouponValidation,
   LibraryData,
   Order,
   OrderCreated,
+  PaymentMethod,
   PublicReview,
   ReadingProgress,
   ReviewInput,
@@ -181,6 +185,38 @@ export function validateCoupon(code: string, subtotal: number): Promise<CouponVa
 /** Cria o pedido (POST /api/orders) — Bearer opcional (compra de visitante). */
 export function createOrder(payload: CheckoutPayload, token?: string): Promise<OrderCreated> {
   return request<OrderCreated>("/api/orders", { method: "POST", body: payload, token });
+}
+
+// ---------------------------------------------------------------------------
+// Pagamento (§7.4) — cobrança PagBank + polling até a confirmação
+// ---------------------------------------------------------------------------
+
+/** §7.4 — cobrança PIX: devolve QR Code (data URI) + copia-e-cola. */
+export function chargePix(orderId: string): Promise<ChargeOutcome> {
+  return request<ChargeOutcome>("/api/payment/charge", {
+    method: "POST",
+    body: { orderId, method: "pix" },
+  });
+}
+
+/**
+ * §7.4 — cobrança de cartão em um passo: o `card` é o criptograma gerado
+ * no aparelho pelo SDK do PagBank (o número nunca trafega em texto puro).
+ */
+export function chargeCard(
+  orderId: string,
+  method: PaymentMethod,
+  card: CardPayload,
+): Promise<ChargeOutcome> {
+  return request<ChargeOutcome>("/api/payment/charge", {
+    method: "POST",
+    body: { orderId, method, card },
+  });
+}
+
+/** §7.4 — status do pagamento (polling do checkout e da tela Pagar pedido). */
+export function paymentStatus(orderId: string): Promise<ChargeOutcome> {
+  return request<ChargeOutcome>(`/api/payment/status?orderId=${encodeURIComponent(orderId)}`);
 }
 
 /** Histórico de pedidos do cliente logado (GET /api/orders/mine). */

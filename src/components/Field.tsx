@@ -3,7 +3,7 @@
  */
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Pressable, Text, TextInput, View, type KeyboardTypeOptions } from "react-native";
+import { Pressable, Text, TextInput, View, type KeyboardTypeOptions, type TextInputProps } from "react-native";
 
 import { Colors, Fonts, Radius } from "@/constants/theme";
 
@@ -15,7 +15,8 @@ interface FieldProps {
   secure?: boolean;
   keyboardType?: KeyboardTypeOptions;
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
-  autoComplete?: "email" | "password" | "name" | "off";
+  /** autocompletar do sistema (ex.: cc-number/cc-exp/cc-csc no cartão) */
+  autoComplete?: TextInputProps["autoComplete"];
   maxLength?: number;
   error?: string | null;
 }

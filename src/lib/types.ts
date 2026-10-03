@@ -247,6 +247,8 @@ export interface CheckoutPayload {
   shippingOption?: "standard" | "express";
   coupon?: string;
   gift?: OrderGift;
+  /** §7.4 — CPF/CNPJ do comprador; a cobrança PagBank recusa sem ele. */
+  payment?: { taxId?: string };
 }
 
 export type OrderStatus =
@@ -300,6 +302,33 @@ export interface OrderCreated {
   digitalItems: string[];
   persisted: boolean;
   status: OrderStatus;
+}
+
+/** PIX gerado por POST /api/payment/charge (§7.4). */
+export interface PixCharge {
+  /** data URI PNG do QR Code */
+  image: string;
+  /** código copia-e-cola */
+  text: string;
+  /** ISO — validade do QR (30 min) */
+  expiresAt: string;
+}
+
+/** Resposta de POST /api/payment/charge e GET /api/payment/status (§7.4). */
+export interface ChargeOutcome {
+  ok: true;
+  status: OrderStatus;
+  message?: string;
+  pix?: PixCharge;
+}
+
+/** Criptograma do cartão (SDK PagBank) — nunca o número em texto puro. */
+export interface CardPayload {
+  encrypted: string;
+  expMonth: string;
+  expYear: string;
+  installments: number;
+  holder: string;
 }
 
 /** Endereço salvo da conta (GET /api/account/addresses) — só o que usamos. */
