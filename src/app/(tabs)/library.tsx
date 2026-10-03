@@ -3,20 +3,22 @@
  * de leitura/escuta. Visitante recebe convite de login.
  */
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { BookCover } from "@/components/BookCover";
 import { EmptyState } from "@/components/EmptyState";
+import { ProductArt } from "@/components/ProductArt";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Loading, Screen } from "@/components/Screen";
 import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { loadLibrary } from "@/lib/api";
 import { formatDate } from "@/lib/catalog";
 import type { LibraryData, LibraryItem, Product, ReadingProgress } from "@/lib/types";
 import { useAuth } from "@/lib/useAuth";
 import { useCatalog } from "@/lib/useCatalog";
-import { loadLibrary } from "@/lib/api";
 
 interface LibraryState {
   loading: boolean;
@@ -65,7 +67,18 @@ function LibraryRow({
           backgroundColor: Colors.surfaceAlt,
         }}
       >
-        <BookCover cover={product?.cover} title={item.title} />
+        {product ? (
+          <ProductArt product={product} />
+        ) : item.image ? (
+          <Image
+            source={{ uri: item.image }}
+            style={{ width: "100%", height: "100%" }}
+            contentFit="cover"
+            accessibilityLabel={item.title}
+          />
+        ) : (
+          <BookCover />
+        )}
       </View>
 
       <View style={{ flex: 1, gap: 6 }}>

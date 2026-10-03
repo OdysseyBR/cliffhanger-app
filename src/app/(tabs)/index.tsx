@@ -8,6 +8,7 @@
  * entram biblioteca (progresso real) e wishlist.
  */
 import { Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
@@ -16,6 +17,7 @@ import { BookCover } from "@/components/BookCover";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { HeroBanner } from "@/components/HeroBanner";
+import { ProductArt } from "@/components/ProductArt";
 import { ProductCard } from "@/components/ProductCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { QuickLinks } from "@/components/QuickLinks";
@@ -114,7 +116,18 @@ function LibraryRailCard({
           backgroundColor: Colors.surface,
         }}
       >
-        <BookCover cover={product?.cover} title={item.title} />
+        {product ? (
+          <ProductArt product={product} />
+        ) : item.image ? (
+          <Image
+            source={{ uri: item.image }}
+            style={{ width: "100%", height: "100%" }}
+            contentFit="cover"
+            accessibilityLabel={item.title}
+          />
+        ) : (
+          <BookCover />
+        )}
         {item.source === "plus" ? (
           <View
             style={{
@@ -180,7 +193,7 @@ function UniverseRailCard({ universe }: { universe: Universe }) {
           backgroundColor: Colors.surface,
         }}
       >
-        <BookCover cover={universe.cover} title={universe.name} />
+        <BookCover cover={universe.cover} />
       </View>
       <Text
         numberOfLines={1}

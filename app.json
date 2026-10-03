@@ -51,6 +51,12 @@
     "plugins": [
       "expo-router",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "O Cliffhanger Store usa suas fotos apenas para anexar imagens às avaliações de produtos que você publica."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#0C0014",

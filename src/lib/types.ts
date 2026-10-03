@@ -107,6 +107,8 @@ export interface Product {
   description: string;
   specs: Spec[];
   cover?: Cover;
+  /** §23 — imagem enviada no criador de itens (Cloudinary), quando houver */
+  image?: string;
   /** ISO — usado em pré-vendas e lançamentos */
   releaseDate?: string;
   salesRank?: number;
@@ -145,6 +147,29 @@ export interface Catalog {
   works: Work[];
   universes: Universe[];
   authors: Author[];
+}
+
+/**
+ * §19 — avaliação pública aprovada (GET /api/reviews). Nunca inclui o
+ * e-mail do autor; `verified` vem calculado no servidor.
+ */
+export interface PublicReview {
+  id: string;
+  authorName: string;
+  rating: number;
+  comment: string;
+  photos: string[];
+  verified: boolean;
+  createdAt: string;
+}
+
+/** Body de POST /api/reviews (sessão do usuário via Bearer). */
+export interface ReviewInput {
+  productId: string;
+  authorName: string;
+  rating: number;
+  comment: string;
+  photos: string[];
 }
 
 /** Resposta de GET /api/library. */

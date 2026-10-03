@@ -2,7 +2,7 @@
  * Regras derivadas do catálogo — espelham src/lib/data.ts da loja para a
  * home do app (Documento Mestre §10.2) mostrar os mesmos critérios do site.
  */
-import type { Author, Product, ProductCategory, Universe, Work } from "./types";
+import type { Author, Product, ProductCategory, ProductType, Universe, Work } from "./types";
 
 /** Mais vendidos (menor salesRank primeiro). */
 export function bestSellers(products: Product[]): Product[] {
@@ -77,6 +77,29 @@ export const CATEGORY_LABELS: Record<ProductCategory, string> = {
   produtos: "Produtos",
   colecionaveis: "Colecionáveis",
 };
+
+/** Rótulos de tipo — espelham typeLabels da loja (§7). */
+export const TYPE_LABELS: Record<ProductType, string> = {
+  "livro-fisico": "Livro físico",
+  hq: "HQ",
+  artbook: "Artbook",
+  ebook: "E-book",
+  audiobook: "Audiobook",
+  camisa: "Camiseta",
+  caneca: "Caneca",
+  poster: "Pôster",
+  marcador: "Marcador",
+  adesivo: "Adesivos",
+  print: "Print",
+  box: "Box",
+  colecionavel: "Colecionável",
+};
+
+/** Desconto em % (null quando não há comparativo maior). */
+export function discountPercent(price: number, compareAt?: number): number | null {
+  if (compareAt === undefined || compareAt <= price) return null;
+  return Math.round(((compareAt - price) / compareAt) * 100);
+}
 
 /** Nome do autor do produto (quando vinculado). */
 export function authorName(product: Product, authors: Author[]): string | null {

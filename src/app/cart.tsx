@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 import { BookCover } from "@/components/BookCover";
+import { ProductArt } from "@/components/ProductArt";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { Loading, Screen } from "@/components/Screen";
@@ -132,7 +133,7 @@ export default function CartScreen() {
                 backgroundColor: Colors.surfaceAlt,
               }}
             >
-              <BookCover cover={product!.cover} title={product!.title} />
+              {product ? <ProductArt product={product} /> : <BookCover />}
             </View>
 
             <View style={{ flex: 1, gap: 8 }}>

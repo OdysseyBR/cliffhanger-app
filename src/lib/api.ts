@@ -12,7 +12,9 @@ import type {
   LibraryData,
   Order,
   OrderCreated,
+  PublicReview,
   ReadingProgress,
+  ReviewInput,
   SavedAddress,
   ShippingQuote,
 } from "./types";
@@ -189,6 +191,26 @@ export function loadOrders(token: string): Promise<{ orders: Order[] }> {
 /** Endereços salvos da conta — pré-preenchimento do checkout (§7.2). */
 export function loadSavedAddresses(token: string): Promise<{ addresses: SavedAddress[] }> {
   return request<{ addresses: SavedAddress[] }>("/api/account/addresses", { token });
+}
+
+// ---------------------------------------------------------------------------
+// Avaliações (§19) — lista pública de aprovadas + envio autenticado
+// ---------------------------------------------------------------------------
+
+/** GET /api/reviews?productId= — só aprovadas, sem e-mail do autor. */
+export function loadReviews(productId: string): Promise<{ items: PublicReview[] }> {
+  return request<{ items: PublicReview[] }>(
+    `/api/reviews?productId=${encodeURIComponent(productId)}`,
+  );
+}
+
+/** POST /api/reviews — entra como pendente na moderação do painel. */
+export function submitReview(token: string, review: ReviewInput): Promise<{ ok: boolean }> {
+  return request<{ ok: boolean }>("/api/reviews", {
+    method: "POST",
+    token,
+    body: { review },
+  });
 }
 
 // ---------------------------------------------------------------------------
