@@ -138,7 +138,7 @@ export function ProductCard({ product, width, fill, subtitle, rating = true }: P
               justifyContent: "center",
               borderWidth: 1,
               borderColor: Colors.line,
-              backgroundColor: "#0C0014CC",
+              backgroundColor: "#0E0000CC",
               opacity: pressed ? 0.7 : 1,
             },
           ]}

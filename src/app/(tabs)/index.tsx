@@ -23,7 +23,7 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { QuickLinks } from "@/components/QuickLinks";
 import { Rail } from "@/components/Rail";
 import { Loading, Screen } from "@/components/Screen";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { loadLibrary } from "@/lib/api";
 import { formatDate, launches, recommended, upcomingLaunches } from "@/lib/catalog";
 import type { LibraryData, LibraryItem, Product, ReadingProgress, Universe } from "@/lib/types";
@@ -260,6 +260,7 @@ function LibraryRail({
 }
 
 export default function HomeScreen() {
+  useThemeColors();
   const { catalog, loading, error, reload } = useCatalog();
   const { user, loading: authLoading, wishlist, getIdToken } = useAuth();
   const [library, setLibrary] = useState<LibraryState>(LIB_IDLE);

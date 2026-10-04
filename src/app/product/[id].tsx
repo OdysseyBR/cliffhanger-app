@@ -20,7 +20,7 @@ import { Rail } from "@/components/Rail";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Loading, Screen } from "@/components/Screen";
 import { Stars } from "@/components/Stars";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import {
   authorName,
   CATEGORY_LABELS,
@@ -49,7 +49,7 @@ function Chip({
     ok: { bg: "#30a46c1a", border: "#30a46c66", fg: "#30a46c" },
     alert: { bg: "#e5484d1a", border: "#e5484d66", fg: "#e5484d" },
     muted: { bg: Colors.surface, border: Colors.border, fg: Colors.textMuted },
-    digital: { bg: "#5603AD26", border: "#5603AD99", fg: "#B98CF5" },
+    digital: { bg: Colors.primary + "26", border: Colors.primary + "99", fg: Colors.accent },
   }[tone];
   return (
     <View
@@ -161,6 +161,7 @@ function TrustLine({ icon, text }: { icon: IconName; text: string }) {
 }
 
 export default function ProductScreen() {
+  useThemeColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { catalog, loading, error, reload } = useCatalog();
   const { wishlist, toggleWishlist } = useAuth();
@@ -423,8 +424,8 @@ export default function ProductScreen() {
                 style={{
                   borderRadius: Radius.sm,
                   borderWidth: 1,
-                  borderColor: "#FDC50066",
-                  backgroundColor: "#FDC5001A",
+                  borderColor: Colors.accent + "66",
+                  backgroundColor: Colors.accent + "1A",
                   paddingHorizontal: 14,
                   paddingVertical: 10,
                 }}
@@ -461,7 +462,7 @@ export default function ProductScreen() {
                       paddingVertical: 7,
                     }}
                   >
-                    <Text style={{ fontFamily: Fonts.bodySemi, fontSize: 11.5, color: "#F8FEFF" }}>
+                    <Text style={{ fontFamily: Fonts.bodySemi, fontSize: 11.5, color: Colors.onPrimary }}>
                       {TYPE_LABELS[product.type] ?? product.type} · {formatBRL(product.price)}
                     </Text>
                   </View>

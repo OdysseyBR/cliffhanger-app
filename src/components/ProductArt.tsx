@@ -13,10 +13,10 @@ import { BookCover } from "@/components/BookCover";
 import type { Product } from "@/lib/types";
 
 const BRAND_COLORS = [
-  { bg: "#5603AD", fg: "#F8FEFF", accent: "#FDC500" },
-  { bg: "#0C0014", fg: "#FDC500", accent: "#5603AD" },
-  { bg: "#FDC500", fg: "#0C0014", accent: "#5603AD" },
-  { bg: "#F8FEFF", fg: "#5603AD", accent: "#0C0014" },
+  { bg: "#A30707", fg: "#F8FEFF", accent: "#E7CB9B" },
+  { bg: "#0E0000", fg: "#E7CB9B", accent: "#A30707" },
+  { bg: "#E7CB9B", fg: "#0E0000", accent: "#A30707" },
+  { bg: "#F8FEFF", fg: "#A30707", accent: "#0E0000" },
 ];
 
 /** Semente estável por produto (mesma fórmula do site). */

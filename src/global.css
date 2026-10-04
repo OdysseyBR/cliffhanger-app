@@ -8,9 +8,10 @@
   --font-serif: Georgia, 'Times New Roman', serif;
 }
 
-/* Fundo escuro da marca desde o primeiro pixel (tema dark-only) */
+/* Fundo da marca desde o primeiro pixel (escuro é o padrão; o modo claro
+   é espelhado no DOM pelo ThemeProvider quando o usuário troca) */
 html,
 body,
 #root {
-  background: #0c0014;
+  background: #0e0000;
 }

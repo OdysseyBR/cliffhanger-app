@@ -11,7 +11,7 @@ import { Text, View } from "react-native";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { Loading, Screen } from "@/components/Screen";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { ApiError, loadOrders } from "@/lib/api";
 import { formatBRL, formatDate } from "@/lib/catalog";
 import type { Order, OrderStatus, PaymentMethod } from "@/lib/types";
@@ -43,6 +43,7 @@ const PAYMENT_LABEL: Record<PaymentMethod, string> = {
 };
 
 export default function OrdersScreen() {
+  useThemeColors();
   const { user, loading: authLoading, getIdToken } = useAuth();
   const [orders, setOrders] = useState<Order[] | null>(null);
   const [error, setError] = useState<string | null>(null);

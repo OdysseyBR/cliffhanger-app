@@ -15,7 +15,7 @@ import { CardForm, type CardFormHandle } from "@/components/CardForm";
 import { EmptyState } from "@/components/EmptyState";
 import { PixPanel } from "@/components/PixPanel";
 import { Loading, Screen } from "@/components/Screen";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { ApiError, chargeCard, chargePix, loadOrders } from "@/lib/api";
 import { formatBRL } from "@/lib/catalog";
 import type { Order, OrderStatus, PaymentMethod, PixCharge } from "@/lib/types";
@@ -38,6 +38,7 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 };
 
 export default function PayScreen() {
+  useThemeColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user, loading: authLoading, getIdToken } = useAuth();
   const [order, setOrder] = useState<Order | null>(null);

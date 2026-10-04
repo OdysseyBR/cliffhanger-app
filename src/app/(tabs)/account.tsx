@@ -14,12 +14,13 @@ import { GoogleButton } from "@/components/GoogleButton";
 import { Loading, Screen } from "@/components/Screen";
 import { Segmented } from "@/components/Segmented";
 import { Wordmark } from "@/components/Wordmark";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { useAuth } from "@/lib/useAuth";
 
 type Mode = "entrar" | "criar";
 
 export default function AccountScreen() {
+  useThemeColors();
   const { user, loading, busy, signIn, signUp, resetPassword, logOut, wishlist } = useAuth();
 
   const [mode, setMode] = useState<Mode>("entrar");
@@ -168,6 +169,12 @@ export default function AccountScreen() {
               title="Segurança"
               subtitle="Senha, e-mail, sessões e exclusão da conta."
               onPress={() => router.push("/security")}
+            />
+            <NavCard
+              icon="color-palette-outline"
+              title="Configurações"
+              subtitle="Aparência do app — modo claro ou escuro."
+              onPress={() => router.push("/settings")}
             />
           </SectionBlock>
 

@@ -10,11 +10,12 @@ import { Keyboard, Pressable, Text, TextInput, View } from "react-native";
 import { EmptyState } from "@/components/EmptyState";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Loading, Screen } from "@/components/Screen";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { searchProducts } from "@/lib/catalog";
 import { useCatalog } from "@/lib/useCatalog";
 
 export default function SearchScreen() {
+  useThemeColors();
   const params = useLocalSearchParams<{ q?: string }>();
   const { catalog, loading, error, reload } = useCatalog();
   const paramQ = typeof params.q === "string" && params.q.length > 0 ? params.q : null;

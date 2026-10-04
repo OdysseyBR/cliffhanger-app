@@ -1,5 +1,6 @@
 /**
- * Botão da identidade (primário = destaque amarelo; secundário = contorno roxo).
+ * Botão da identidade (primário = vermelho da marca; secundário = contorno
+ * no vermelho). No modo claro/escuro os tokens vêm do motor de tema.
  */
 import {
   ActivityIndicator,
@@ -52,7 +53,7 @@ export function Button({
           justifyContent: "center",
           gap: 8,
           paddingHorizontal: 20,
-          backgroundColor: primary ? Colors.accent : Colors.surface,
+          backgroundColor: primary ? Colors.primary : Colors.surface,
           borderWidth: primary ? 0 : 1,
           borderColor: primary ? Colors.accent : Colors.primary,
           opacity: inactive ? 0.55 : pressed ? 0.85 : 1,
@@ -70,7 +71,7 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={primary ? Colors.onAccent : Colors.accent} />
+        <ActivityIndicator size="small" color={primary ? Colors.onPrimary : Colors.accent} />
       ) : (
         icon ?? null
       )}
@@ -79,7 +80,7 @@ export function Button({
           fontFamily: Fonts.bodyBold,
           fontSize: 15,
           letterSpacing: 0.8,
-          color: primary ? Colors.onAccent : Colors.text,
+          color: primary ? Colors.onPrimary : Colors.text,
         }}
       >
         {label}

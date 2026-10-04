@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { Field } from "@/components/Field";
 import { PixPanel } from "@/components/PixPanel";
 import { Loading, Screen } from "@/components/Screen";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import {
   ApiError,
   chargeCard,
@@ -95,6 +95,7 @@ function formatPhoneInput(value: string): string {
 }
 
 export default function CheckoutScreen() {
+  useThemeColors();
   const { loading: authLoading } = useAuth();
   const { hydrated } = useCart();
 

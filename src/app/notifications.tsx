@@ -12,7 +12,7 @@ import { Pressable, Text, View } from "react-native";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { Loading, Screen } from "@/components/Screen";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { formatDate } from "@/lib/catalog";
 import {
   getPushPermission,
@@ -73,6 +73,7 @@ const PROMISES: { icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
 ];
 
 export default function NotificationsScreen() {
+  useThemeColors();
   const { user, loading: authLoading } = useAuth();
   const supported = isNotificationsSupported();
 

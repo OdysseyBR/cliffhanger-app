@@ -7,8 +7,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router/js-tabs";
 
 import { TabBar } from "@/components/TabBar";
+import { useThemeColors } from "@/constants/theme";
 
 export default function TabsLayout() {
+  useThemeColors();
   return (
     <Tabs
       tabBar={(props) => <TabBar {...props} />}

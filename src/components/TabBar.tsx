@@ -24,7 +24,7 @@ export function TabBar({ state, descriptors, navigation, insets }: BottomTabBarP
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const focused = state.index === index;
-        const color = focused ? Colors.accent : "#F8FEFF99";
+        const color = focused ? Colors.accent : Colors.textFaint;
         const label = options.title ?? route.name;
 
         const onPress = () => {

@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
 
+import { Colors } from "@/constants/theme";
 import {
   buildReaderHtml,
   dispatchReaderMessage,
@@ -41,7 +42,7 @@ export default function PdfCanvas(props: ReaderCanvasProps) {
       onMessage={onMessage}
       scrollEnabled={false}
       setSupportMultipleWindows={false}
-      style={{ flex: 1, backgroundColor: "#0C0014" }}
+      style={{ flex: 1, backgroundColor: Colors.background }}
     />
   );
 }

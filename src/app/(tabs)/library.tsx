@@ -13,7 +13,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { ProductArt } from "@/components/ProductArt";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Loading, Screen } from "@/components/Screen";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { loadLibrary } from "@/lib/api";
 import { formatDate } from "@/lib/catalog";
 import type { LibraryData, LibraryItem, Product, ReadingProgress } from "@/lib/types";
@@ -141,6 +141,7 @@ function LibraryRow({
 }
 
 export default function LibraryScreen() {
+  useThemeColors();
   const { user, loading: authLoading, getIdToken } = useAuth();
   const { catalog } = useCatalog();
   const [state, setState] = useState<LibraryState>({ loading: false, data: null, error: null });

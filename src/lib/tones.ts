@@ -9,20 +9,20 @@ export interface Tone {
 
 export const BADGE_TONE: Record<string, Tone> = {
   NOVO: { bg: "#30a46c", fg: "#F8FEFF" },
-  "LANÇAMENTO": { bg: "#5603AD", fg: "#F8FEFF" },
-  "PRÉ-VENDA": { bg: "#FDC500", fg: "#0C0014" },
-  EXCLUSIVO: { bg: "#0C0014", fg: "#FDC500" },
+  "LANÇAMENTO": { bg: "#A30707", fg: "#F8FEFF" },
+  "PRÉ-VENDA": { bg: "#E7CB9B", fg: "#0E0000" },
+  EXCLUSIVO: { bg: "#0E0000", fg: "#E7CB9B" },
   LIMITADO: { bg: "#e5484d", fg: "#F8FEFF" },
-  "BEST-SELLER": { bg: "#FDC500", fg: "#0C0014" },
+  "BEST-SELLER": { bg: "#E7CB9B", fg: "#0E0000" },
   ESGOTANDO: { bg: "#e5484d", fg: "#F8FEFF" },
   OFERTA: { bg: "#e5484d", fg: "#F8FEFF" },
-  DIGITAL: { bg: "#5603AD", fg: "#F8FEFF" },
-  "EDIÇÃO ESPECIAL": { bg: "#0C0014", fg: "#FDC500" },
+  DIGITAL: { bg: "#A30707", fg: "#F8FEFF" },
+  "EDIÇÃO ESPECIAL": { bg: "#0E0000", fg: "#E7CB9B" },
 };
 
-export const BADGE_FALLBACK: Tone = { bg: "#5603AD", fg: "#F8FEFF" };
+export const BADGE_FALLBACK: Tone = { bg: "#A30707", fg: "#F8FEFF" };
 
-/** Tom de um selo (fallback violeta, como no site). */
+/** Tom de um selo (fallback vermelho da marca, como no site). */
 export function badgeTone(badge?: string): Tone {
   return (badge && BADGE_TONE[badge]) || BADGE_FALLBACK;
 }

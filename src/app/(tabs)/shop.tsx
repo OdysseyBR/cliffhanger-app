@@ -10,7 +10,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { EmptyState } from "@/components/EmptyState";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Loading, Screen } from "@/components/Screen";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { CATEGORY_LABELS } from "@/lib/catalog";
 import type { ProductCategory } from "@/lib/types";
 import { useCatalog } from "@/lib/useCatalog";
@@ -42,6 +42,7 @@ function normalizeFilter(value: string | string[] | undefined): Filter {
 }
 
 export default function ShopScreen() {
+  useThemeColors();
   const params = useLocalSearchParams<{ filter?: string }>();
   const { catalog, loading, error, reload } = useCatalog();
   const filter = normalizeFilter(params.filter);

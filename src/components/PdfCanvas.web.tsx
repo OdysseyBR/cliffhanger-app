@@ -6,6 +6,7 @@
  */
 import { useEffect, useMemo, useRef } from "react";
 
+import { Colors } from "@/constants/theme";
 import {
   buildReaderHtml,
   dispatchReaderMessage,
@@ -53,7 +54,7 @@ export default function PdfCanvas(props: ReaderCanvasProps) {
         width: "100%",
         height: "100%",
         border: "none",
-        background: "#0C0014",
+        background: Colors.background,
         display: "block",
       }}
     />

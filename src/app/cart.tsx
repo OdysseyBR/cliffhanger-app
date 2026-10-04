@@ -10,13 +10,14 @@ import { ProductArt } from "@/components/ProductArt";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { Loading, Screen } from "@/components/Screen";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { formatBRL } from "@/lib/catalog";
 import { useCart } from "@/lib/useCart";
 import { useCatalog } from "@/lib/useCatalog";
 import { Pressable, Text, View } from "react-native";
 
 export default function CartScreen() {
+  useThemeColors();
   const { items, hydrated, setQty, remove, subtotal } = useCart();
   const { catalog, loading, error, reload } = useCatalog();
 

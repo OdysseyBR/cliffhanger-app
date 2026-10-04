@@ -13,7 +13,7 @@ import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { Field } from "@/components/Field";
 import { Loading, Screen } from "@/components/Screen";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { deviceLabel, getSid, loadSessions, type AccountSession } from "@/lib/device";
 import { useAuth } from "@/lib/useAuth";
 import { useCart } from "@/lib/useCart";
@@ -55,6 +55,8 @@ function formatLastSeen(iso: string): string {
 }
 
 export default function SecurityScreen() {
+  useThemeColors();
+  const styles = useStyles();
   const {
     user,
     loading: authLoading,
@@ -341,6 +343,7 @@ function SessionList({
   sid: string;
   fallback: string;
 }) {
+  const styles = useStyles();
   const current = sessions.find((session) => session.sid === sid);
   const others = sessions.filter((session) => session.sid !== sid);
   return (
@@ -395,66 +398,69 @@ function SectionBlock({ title, children }: { title: string; children: ReactNode 
   );
 }
 
-const styles = StyleSheet.create({
-  banner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    padding: 12,
-    borderRadius: Radius.sm,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-  },
-  bannerText: {
-    flex: 1,
-    fontFamily: Fonts.body,
-    fontSize: 13,
-    color: Colors.text,
-  },
-  card: {
-    gap: 10,
-    padding: 16,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  rowText: {
-    flex: 1,
-    fontFamily: Fonts.bodySemi,
-    fontSize: 13.5,
-    color: Colors.text,
-  },
-  hint: {
-    fontFamily: Fonts.body,
-    fontSize: 12,
-    lineHeight: 17,
-    color: Colors.textFaint,
-  },
-  muted: {
-    fontFamily: Fonts.body,
-    fontSize: 13,
-    lineHeight: 18,
-    color: Colors.textMuted,
-  },
-  dangerTitle: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: 12,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    color: DANGER,
-  },
-  currentBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: Radius.pill,
-    borderWidth: 1,
-    borderColor: Colors.accent,
-  },
-  currentBadgeText: {
-    fontFamily: Fonts.bodySemi,
-    fontSize: 9.5,
-    letterSpacing: 0.8,
-    color: Colors.accent,
-  },
-});
+/** Estilos vivos — recriados por render para lerem o Colors do modo ativo. */
+function useStyles() {
+  return StyleSheet.create({
+    banner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      padding: 12,
+      borderRadius: Radius.sm,
+      backgroundColor: Colors.surface,
+      borderWidth: 1,
+    },
+    bannerText: {
+      flex: 1,
+      fontFamily: Fonts.body,
+      fontSize: 13,
+      color: Colors.text,
+    },
+    card: {
+      gap: 10,
+      padding: 16,
+      borderRadius: Radius.md,
+      backgroundColor: Colors.surface,
+      borderWidth: 1,
+      borderColor: Colors.border,
+    },
+    rowText: {
+      flex: 1,
+      fontFamily: Fonts.bodySemi,
+      fontSize: 13.5,
+      color: Colors.text,
+    },
+    hint: {
+      fontFamily: Fonts.body,
+      fontSize: 12,
+      lineHeight: 17,
+      color: Colors.textFaint,
+    },
+    muted: {
+      fontFamily: Fonts.body,
+      fontSize: 13,
+      lineHeight: 18,
+      color: Colors.textMuted,
+    },
+    dangerTitle: {
+      fontFamily: Fonts.bodyBold,
+      fontSize: 12,
+      letterSpacing: 1,
+      textTransform: "uppercase",
+      color: DANGER,
+    },
+    currentBadge: {
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: Radius.pill,
+      borderWidth: 1,
+      borderColor: Colors.accent,
+    },
+    currentBadgeText: {
+      fontFamily: Fonts.bodySemi,
+      fontSize: 9.5,
+      letterSpacing: 0.8,
+      color: Colors.accent,
+    },
+  });
+}

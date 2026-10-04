@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PdfCanvas from "@/components/PdfCanvas";
 import { EmptyState } from "@/components/EmptyState";
 import { Loading } from "@/components/Screen";
-import { Colors, Fonts, Radius, ScreenPadding } from "@/constants/theme";
+import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { loadLibrary, resolveFileUrl, saveProgress } from "@/lib/api";
 import type { LibraryItem, ReadingProgress } from "@/lib/types";
 import { useAuth } from "@/lib/useAuth";
@@ -66,6 +66,7 @@ function NavButton({
 }
 
 export default function ReaderScreen() {
+  useThemeColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const { user, loading: authLoading, getIdToken } = useAuth();
