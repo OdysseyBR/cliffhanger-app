@@ -2,13 +2,14 @@
   "expo": {
     "name": "Cliffhanger Store",
     "slug": "cliffhanger-app",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "cliffhangerapp",
     "userInterfaceStyle": "dark",
     "android": {
       "package": "com.odysseybr.cliffhanger",
+      "versionCode": 2,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#0C0014",
@@ -21,7 +22,8 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.FOREGROUND_SERVICE",
-        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.REQUEST_INSTALL_PACKAGES"
       ],
       "intentFilters": [
         {

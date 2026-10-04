@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { Colors } from "@/constants/theme";
+import { AppUpdateChecker } from "@/components/AppUpdateChecker";
 import { NotificationsBridge } from "@/components/NotificationsBridge";
 import { AuthProvider } from "@/lib/useAuth";
 import { CartProvider } from "@/lib/useCart";
@@ -80,6 +81,7 @@ function RootGate({ fontsLoaded }: { fontsLoaded: boolean }) {
           <Stack.Screen name="player/[id]" options={{ animation: "slide_from_right" }} />
         </Stack>
         <NotificationsBridge />
+        <AppUpdateChecker />
       </CartProvider>
     </AuthProvider>
   );
