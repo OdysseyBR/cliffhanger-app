@@ -69,14 +69,6 @@ const PAYMENT_LABEL: Record<PaymentMethod, string> = {
   debito: "Cartão de débito",
 };
 
-const CARD: ViewStyle = {
-  padding: 16,
-  borderRadius: Radius.md,
-  backgroundColor: Colors.surface,
-  borderWidth: 1,
-  borderColor: Colors.border,
-};
-
 function cepDigitsOf(value: string): string {
   return value.replace(/\D/g, "").slice(0, 8);
 }
@@ -440,6 +432,8 @@ function CheckoutFlow() {
       ? createdOrder.orderId
       : null;
   usePaymentPolling(awaitingOrderId, setPayStatus);
+
+  const { CARD, LABEL, HINT } = useStyles();
 
   // Guardas de conteúdo — depois de todos os hooks acima.
   if (loading && !catalog) {
@@ -1027,20 +1021,33 @@ function CheckoutFlow() {
 // Blocos locais
 // ---------------------------------------------------------------------------
 
-const LABEL = {
-  fontFamily: Fonts.bodyMedium,
-  fontSize: 11,
-  letterSpacing: 1.4,
-  color: Colors.textMuted,
-  textTransform: "uppercase" as const,
-};
+/** Estilos vivos do checkout — recriados por render para lerem o Colors do modo ativo. */
+function useStyles() {
+  const CARD: ViewStyle = {
+    padding: 16,
+    borderRadius: Radius.md,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  };
 
-const HINT = {
-  fontFamily: Fonts.body,
-  fontSize: 12,
-  lineHeight: 17,
-  color: Colors.textFaint,
-};
+  const LABEL = {
+    fontFamily: Fonts.bodyMedium,
+    fontSize: 11,
+    letterSpacing: 1.4,
+    color: Colors.textMuted,
+    textTransform: "uppercase" as const,
+  };
+
+  const HINT = {
+    fontFamily: Fonts.body,
+    fontSize: 12,
+    lineHeight: 17,
+    color: Colors.textFaint,
+  };
+
+  return { CARD, LABEL, HINT };
+}
 
 function StepHeading({ title, hint }: { title: string; hint: string }) {
   return (
@@ -1113,6 +1120,7 @@ function OptionRow({
   selected: boolean;
   onPress: () => void;
 }) {
+  const { CARD } = useStyles();
   return (
     <Pressable
       onPress={onPress}

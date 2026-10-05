@@ -36,14 +36,6 @@ interface CardFormProps {
   holderDefault?: string;
 }
 
-const CARD: ViewStyle = {
-  padding: 16,
-  borderRadius: Radius.md,
-  backgroundColor: Colors.surface,
-  borderWidth: 1,
-  borderColor: Colors.border,
-};
-
 type NativeMsg =
   | { type: "ready" }
   | { type: "result"; encrypted: string }
@@ -60,6 +52,15 @@ export const CardForm = forwardRef<CardFormHandle, CardFormProps>(function CardF
   const [installments, setInstallments] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Estilo vivo — recriado por render para ler o Colors do modo ativo.
+  const CARD: ViewStyle = {
+    padding: 16,
+    borderRadius: Radius.md,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  };
 
   // WebView nativa — montada só durante a criptografia
   const [encryptingNative, setEncryptingNative] = useState(false);

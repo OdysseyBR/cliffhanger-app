@@ -19,21 +19,22 @@ interface PixPanelProps {
   onRenew: (pix: PixCharge) => void;
 }
 
-const CARD: ViewStyle = {
-  alignSelf: "stretch",
-  padding: 16,
-  borderRadius: Radius.md,
-  backgroundColor: Colors.surface,
-  borderWidth: 1,
-  borderColor: Colors.border,
-  gap: 12,
-  alignItems: "center",
-};
-
 export function PixPanel({ orderId, pix, onRenew }: PixPanelProps) {
   const [copied, setCopied] = useState(false);
   const [renewing, setRenewing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Estilo vivo — recriado por render para ler o Colors do modo ativo.
+  const CARD: ViewStyle = {
+    alignSelf: "stretch",
+    padding: 16,
+    borderRadius: Radius.md,
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    gap: 12,
+    alignItems: "center",
+  };
 
   useEffect(() => {
     if (!copied) return;

@@ -20,24 +20,16 @@ import type { PublicReview } from "@/lib/types";
 import { useAuth } from "@/lib/useAuth";
 import { uploadImage } from "@/lib/upload";
 
-const CARD: ViewStyle = {
-  backgroundColor: Colors.surface,
-  borderWidth: 1,
-  borderColor: Colors.border,
-  borderRadius: Radius.md,
-  padding: 16,
-};
-
-const LABEL: TextStyle = {
-  fontFamily: Fonts.bodyMedium,
-  fontSize: 11,
-  letterSpacing: 1.4,
-  color: Colors.textMuted,
-  textTransform: "uppercase",
-};
-
 /** Rótulo de campo (mesmo padrão do Field). */
 function FormLabel({ children }: { children: string }) {
+  // Estilo vivo — recriado por render para ler o Colors do modo ativo.
+  const LABEL: TextStyle = {
+    fontFamily: Fonts.bodyMedium,
+    fontSize: 11,
+    letterSpacing: 1.4,
+    color: Colors.textMuted,
+    textTransform: "uppercase",
+  };
   return <Text style={LABEL}>{children}</Text>;
 }
 
@@ -136,6 +128,15 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
   const [uploading, setUploading] = useState(false);
   const [retryTick, setRetryTick] = useState(0);
   const { user, getIdToken } = useAuth();
+
+  // Estilo vivo — recriado por render para ler o Colors do modo ativo.
+  const CARD: ViewStyle = {
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radius.md,
+    padding: 16,
+  };
 
   useEffect(() => {
     let alive = true;

@@ -35,14 +35,6 @@ interface Notice {
   text: string;
 }
 
-/** Tom do cartão de status. */
-const STATUS_TONE = {
-  granted: { icon: "checkmark-circle", color: Colors.accent },
-  denied: { icon: "alert-circle-outline", color: Colors.warning },
-  undetermined: { icon: "notifications-outline", color: Colors.accent },
-  unsupported: { icon: "phone-portrait-outline", color: Colors.textMuted },
-} as const;
-
 const STATUS_COPY: Record<PushPermission, { title: string; message: string }> = {
   granted: {
     title: "Notificações ativadas",
@@ -74,6 +66,15 @@ const PROMISES: { icon: keyof typeof Ionicons.glyphMap; label: string }[] = [
 
 export default function NotificationsScreen() {
   useThemeColors();
+
+  // Tom do cartão de status (vivo — recriado por render com o Colors ativo).
+  const STATUS_TONE = {
+    granted: { icon: "checkmark-circle", color: Colors.accent },
+    denied: { icon: "alert-circle-outline", color: Colors.warning },
+    undetermined: { icon: "notifications-outline", color: Colors.accent },
+    unsupported: { icon: "phone-portrait-outline", color: Colors.textMuted },
+  } as const;
+
   const { user, loading: authLoading } = useAuth();
   const supported = isNotificationsSupported();
 

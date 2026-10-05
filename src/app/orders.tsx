@@ -26,16 +26,6 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
   cancelado: "Cancelado",
 };
 
-/** Tom do chip: amarelo = espera, roxo = em andamento, amarelo sólido = envio/entrega. */
-const STATUS_TONE: Record<OrderStatus, { fg: string; bg: string; border: string }> = {
-  aguardando_pagamento: { fg: Colors.accent, bg: "transparent", border: Colors.accent },
-  pagamento_aprovado: { fg: Colors.text, bg: Colors.primary, border: Colors.primary },
-  em_separacao: { fg: Colors.text, bg: Colors.primary, border: Colors.primary },
-  enviado: { fg: Colors.onAccent, bg: Colors.accent, border: Colors.accent },
-  entregue: { fg: Colors.onAccent, bg: Colors.accent, border: Colors.accent },
-  cancelado: { fg: Colors.warning, bg: "transparent", border: Colors.warning },
-};
-
 const PAYMENT_LABEL: Record<PaymentMethod, string> = {
   pix: "PIX",
   credito: "Cartão de crédito",
@@ -257,6 +247,16 @@ export default function OrdersScreen() {
 }
 
 function StatusChip({ status }: { status: OrderStatus }) {
+  // Tom do chip (vivo — recriado por render): amarelo = espera, roxo = em
+  // andamento, amarelo sólido = envio/entrega.
+  const STATUS_TONE: Record<OrderStatus, { fg: string; bg: string; border: string }> = {
+    aguardando_pagamento: { fg: Colors.accent, bg: "transparent", border: Colors.accent },
+    pagamento_aprovado: { fg: Colors.text, bg: Colors.primary, border: Colors.primary },
+    em_separacao: { fg: Colors.text, bg: Colors.primary, border: Colors.primary },
+    enviado: { fg: Colors.onAccent, bg: Colors.accent, border: Colors.accent },
+    entregue: { fg: Colors.onAccent, bg: Colors.accent, border: Colors.accent },
+    cancelado: { fg: Colors.warning, bg: "transparent", border: Colors.warning },
+  };
   const tone = STATUS_TONE[status];
   return (
     <View
