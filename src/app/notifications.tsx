@@ -291,7 +291,12 @@ export default function NotificationsScreen() {
           title="Histórico"
           action={
             history.length > 0 ? (
-              <Pressable onPress={() => void clearAll()} hitSlop={8}>
+              <Pressable
+                onPress={() => void clearAll()}
+                accessibilityRole="button"
+                accessibilityLabel="Limpar histórico"
+                hitSlop={8}
+              >
                 <Text
                   style={{
                     fontFamily: Fonts.bodyMedium,

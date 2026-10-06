@@ -292,7 +292,7 @@ export default function AccountScreen() {
           placeholder="Mínimo de 6 caracteres"
           secure
           autoCapitalize="none"
-          autoComplete={mode === "criar" ? "password" : "password"}
+          autoComplete="password"
         />
 
         {error ? (

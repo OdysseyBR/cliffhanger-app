@@ -146,7 +146,7 @@ export default function LibraryScreen() {
   const { catalog } = useCatalog();
   const [state, setState] = useState<LibraryState>({ loading: false, data: null, error: null });
 
-  // busca semefeito colateral: devolve o estado e quem chama aplica
+  // busca sem efeito colateral: devolve o estado e quem chama aplica
   const fetchLibrary = useCallback(async (): Promise<LibraryState> => {
     const token = await getIdToken();
     if (!user || !token) {

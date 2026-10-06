@@ -493,9 +493,13 @@ export default function ProductScreen() {
           {/* buy box */}
           <View style={[card, { padding: 16, gap: 10 }]}>
             <Button
-              label={esgotado ? "Esgotado" : added ? "Adicionado ✓" : "Adicionar ao carrinho"}
+              label={esgotado ? "Esgotado" : added ? "Adicionado" : "Adicionar ao carrinho"}
+              icon={
+                added && !esgotado ? (
+                  <Ionicons name="checkmark" size={15} color={Colors.onPrimary} />
+                ) : undefined
+              }
               disabled={esgotado}
-              glow
               onPress={handleAdd}
             />
             <Button

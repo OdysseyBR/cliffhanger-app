@@ -152,7 +152,6 @@ try {
   render(page);
 } catch (error) {
   const detail = String((error && error.message) || error);
-  console.error("[reader]", detail);
   document.getElementById("status").textContent = "Não foi possível abrir este arquivo";
   post({ type: "error", message: detail });
 }

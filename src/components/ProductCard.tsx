@@ -6,7 +6,7 @@
  */
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useRef, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
 import { CoverScrim } from "@/components/CoverScrim";
@@ -31,7 +31,7 @@ interface ProductCardProps {
   rating?: boolean;
 }
 
-export function ProductCard({ product, width, fill, subtitle, rating = true }: ProductCardProps) {
+function ProductCardImpl({ product, width, fill, subtitle, rating = true }: ProductCardProps) {
   const soldOut = product.stock === 0 && !product.digital;
   const lowStock = !product.digital && product.stock > 0 && product.stock <= 5;
   const off = discountPercent(product.price, product.compareAt);
@@ -125,7 +125,7 @@ export function ProductCard({ product, width, fill, subtitle, rating = true }: P
           }}
           accessibilityRole="button"
           accessibilityLabel={wished ? "Remover da wishlist" : "Salvar na wishlist"}
-          hitSlop={6}
+          hitSlop={8}
           style={({ pressed }) => [
             {
               position: "absolute",
@@ -276,6 +276,7 @@ export function ProductCard({ product, width, fill, subtitle, rating = true }: P
             onPress={onAdd}
             disabled={soldOut}
             accessibilityRole="button"
+            hitSlop={6}
             style={({ pressed }) => [
               {
                 minHeight: 32,
@@ -288,19 +289,27 @@ export function ProductCard({ product, width, fill, subtitle, rating = true }: P
               },
             ]}
           >
-            <Text
-              style={{
-                fontFamily: Fonts.bodyBold,
-                fontSize: 11,
-                letterSpacing: 0.8,
-                color: Colors.onAccent,
-              }}
-            >
-              {soldOut ? "Esgotado" : added ? "Adicionado ✓" : "Comprar"}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+              {added && !soldOut ? (
+                <Ionicons name="checkmark" size={12} color={Colors.onAccent} />
+              ) : null}
+              <Text
+                style={{
+                  fontFamily: Fonts.bodyBold,
+                  fontSize: 11,
+                  letterSpacing: 0.8,
+                  color: Colors.onAccent,
+                }}
+              >
+                {soldOut ? "Esgotado" : added ? "Adicionado" : "Comprar"}
+              </Text>
+            </View>
           </Pressable>
         </View>
       </View>
     </Pressable>
   );
 }
+
+/** Memo: a grade toda re-renderiza junto quando a tela muda — card não. */
+export const ProductCard = memo(ProductCardImpl);

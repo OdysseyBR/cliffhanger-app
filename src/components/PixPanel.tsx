@@ -3,6 +3,7 @@
  * renovação quando o código expira (o servidor reaproveita a cobrança
  * ativa e só gera novo QR quando a anterior venceu).
  */
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import * as Clipboard from "expo-clipboard";
 import { useEffect, useState } from "react";
@@ -145,7 +146,10 @@ export function PixPanel({ orderId, pix, onRenew }: PixPanelProps) {
       </View>
 
       <Button
-        label={copied ? "Código copiado ✓" : "Copiar código PIX"}
+        label={copied ? "Código copiado" : "Copiar código PIX"}
+        icon={
+          copied ? <Ionicons name="checkmark" size={15} color={Colors.onPrimary} /> : undefined
+        }
         onPress={() => void copy()}
         style={{ alignSelf: "stretch" }}
       />

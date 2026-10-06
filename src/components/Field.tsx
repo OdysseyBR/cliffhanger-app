@@ -64,6 +64,7 @@ export function Field({
           onChangeText={onChangeText}
           placeholder={placeholder}
           placeholderTextColor={Colors.textFaint}
+          accessibilityLabel={label}
           secureTextEntry={secure && !visible}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
@@ -99,6 +100,7 @@ export function Field({
       </View>
       {error ? (
         <Text
+          accessibilityLiveRegion="polite"
           style={{
             fontFamily: Fonts.bodyMedium,
             fontSize: 12,

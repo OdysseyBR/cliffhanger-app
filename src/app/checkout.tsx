@@ -268,7 +268,7 @@ function CheckoutFlow() {
           return;
         }
         if (!quoteReady) {
-          setEntregaError("Aguarde a cálculo do frete.");
+          setEntregaError("Aguarde o cálculo do frete.");
           return;
         }
         if (!selectedOption) {
@@ -544,7 +544,7 @@ function CheckoutFlow() {
               keyboardType="number-pad"
               maxLength={18}
             />
-            <Button label="Continuar para entrega" glow onPress={goNext} />
+            <Button label="Continuar para entrega" onPress={goNext} />
           </View>
         ) : null}
 
@@ -658,7 +658,7 @@ function CheckoutFlow() {
               />
             )}
             {entregaError ? <ErrorText>{entregaError}</ErrorText> : null}
-            <Button label="Continuar para pagamento" glow onPress={goNext} />
+            <Button label="Continuar para pagamento" onPress={goNext} />
           </View>
         ) : null}
 
@@ -746,7 +746,6 @@ function CheckoutFlow() {
 
             <Button
               label="Revisar pedido"
-              glow
               onPress={goNextPagamento}
               loading={preparingCard}
               disabled={preparingCard}
@@ -872,7 +871,6 @@ function CheckoutFlow() {
             {orderError ? <ErrorText>{orderError}</ErrorText> : null}
             <Button
               label="Confirmar pedido"
-              glow
               onPress={() => void placeOrder()}
               loading={placing}
               disabled={placing}

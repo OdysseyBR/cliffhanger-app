@@ -333,7 +333,6 @@ export default function PayScreen() {
             />
             <Button
               label={`Pagar ${formatBRL(order.total)}`}
-              glow
               loading={paying}
               disabled={paying}
               onPress={() => void payCard()}

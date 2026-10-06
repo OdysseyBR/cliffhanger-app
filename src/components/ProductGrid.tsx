@@ -1,5 +1,6 @@
 /**
  * Grade de produtos 2 colunas (responsiva) — usada em Loja e Buscar.
+ * `useGridMetrics` expõe a mesma fórmula pra Loja (FlatList virtualizada).
  */
 import { useWindowDimensions, View } from "react-native";
 
@@ -7,6 +8,15 @@ import { EmptyState } from "@/components/EmptyState";
 import { ProductCard } from "@/components/ProductCard";
 import { ScreenPadding } from "@/constants/theme";
 import type { Product } from "@/lib/types";
+
+/** Colunas (2/3) e largura do card — fonte única da fórmula da grade. */
+export function useGridMetrics() {
+  const { width } = useWindowDimensions();
+  const gutters = ScreenPadding * 2 + 12;
+  const columns = width >= 720 ? 3 : 2;
+  const cardWidth = Math.min(300, (Math.min(width, 840) - gutters) / columns);
+  return { columns, cardWidth };
+}
 
 interface ProductGridProps {
   products: Product[];
@@ -16,10 +26,7 @@ interface ProductGridProps {
 }
 
 export function ProductGrid({ products, emptyTitle, emptyMessage, emptyIcon }: ProductGridProps) {
-  const { width } = useWindowDimensions();
-  const gutters = ScreenPadding * 2 + 12;
-  const columns = width >= 720 ? 3 : 2;
-  const cardWidth = Math.min(300, (Math.min(width, 840) - gutters) / columns);
+  const { cardWidth } = useGridMetrics();
 
   if (products.length === 0) {
     return (

@@ -1,16 +1,12 @@
 /**
  * Capa geométrica Cliffhanger em SVG — port do BookCover.tsx da loja web
- * (identidade de “recortes”, paleta oficial). Cada capa gera gradientes com
- * id único (useId) para conviverem na mesma página/DOM.
+ * (identidade de “recortes”, paleta oficial). Fundo chapado (regra P4
+ * “sem gradientes”), sem id de gradiente.
  */
-import { useId } from "react";
 import Svg, {
   Circle,
-  Defs,
-  LinearGradient,
   Path,
   Rect,
-  Stop,
   Text as SvgText,
 } from "react-native-svg";
 
@@ -24,9 +20,6 @@ export interface BookCoverProps {
 }
 
 export function BookCover({ cover, title, label }: BookCoverProps) {
-  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const gradientId = `g-${uid}`;
-
   const {
     bg = Palette.primary,
     fg = Palette.fg,
@@ -56,14 +49,7 @@ export function BookCover({ cover, title, label }: BookCoverProps) {
       width="100%"
       height="100%"
     >
-      <Defs>
-        <LinearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0%" stopColor={bg} />
-          <Stop offset="100%" stopColor={bg} stopOpacity={0.72} />
-        </LinearGradient>
-      </Defs>
-
-      <Rect width="300" height="450" fill={`url(#${gradientId})`} />
+      <Rect width="300" height="450" fill={bg} />
 
       {/* lombada */}
       <Rect x="0" y="0" width="14" height="450" fill={accent} opacity="0.85" />

@@ -5,7 +5,16 @@
  * navegador. "Depois" adia até a próxima abertura (sessão).
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, AppState, Modal, Platform, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  AppState,
+  Keyboard,
+  Modal,
+  Platform,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 
 import { Button } from "@/components/Button";
 import { Colors, Fonts, Radius, Spacing, useThemeColors } from "@/constants/theme";
@@ -44,12 +53,19 @@ export function AppUpdateChecker() {
 
   const check = useCallback(async () => {
     if (dismissedRef.current || phaseRef.current !== "hidden") return;
+    // manifesto é de APK: iOS não recebe o diálogo (web mantém o fallback
+    // pelo navegador aprovado no gate C1 da Etapa N)
+    if (Platform.OS === "ios") return;
     const now = Date.now();
     if (now - lastCheckRef.current < CHECK_INTERVAL_MS) return;
-    lastCheckRef.current = now;
     const latest = await fetchLatestVersion();
-    if (!latest || !hasNewerVersion(latest)) return;
+    // falha de rede não consome a janela de 5 min (repara no próximo foreground)
+    if (!latest) return;
+    lastCheckRef.current = now;
+    if (!hasNewerVersion(latest)) return;
     if (dismissedRef.current || phaseRef.current !== "hidden") return;
+    // diálogo não pode abrir por cima do teclado
+    Keyboard.dismiss();
     setManifest(latest);
     setProgress(0);
     go("available");
@@ -105,7 +121,9 @@ export function AppUpdateChecker() {
     } catch {
       cancelRef.current = null;
       if (cancelledRef.current) {
-        go("available");
+        // cancelado pelo usuário: volta às opções — salvo se o diálogo já
+        // tinha sido fechado pelo "voltar" (aí fica oculto mesmo)
+        go(dismissedRef.current ? "hidden" : "available");
       } else {
         go("error");
       }
@@ -116,6 +134,12 @@ export function AppUpdateChecker() {
     cancelledRef.current = true;
     cancelRef.current?.();
   }, []);
+
+  /** "Voltar" do Android: no meio do download cancela junto (P1.1). */
+  const closeDialog = useCallback(() => {
+    if (phaseRef.current === "downloading") cancelDownload();
+    dismiss();
+  }, [cancelDownload, dismiss]);
 
   const browserFallback = useCallback(async () => {
     if (!manifest) return;
@@ -137,7 +161,7 @@ export function AppUpdateChecker() {
       transparent
       animationType="fade"
       statusBarTranslucent
-      onRequestClose={dismiss}
+      onRequestClose={closeDialog}
     >
       <View
         style={{
@@ -207,7 +231,12 @@ export function AppUpdateChecker() {
           ) : null}
 
           {phase === "downloading" ? (
-            <View testID="update-progress" style={{ gap: Spacing.sm }}>
+            <View
+              testID="update-progress"
+              accessibilityRole="progressbar"
+              accessibilityValue={{ min: 0, max: 100, now: pct, text: `${pct}%` }}
+              style={{ gap: Spacing.sm }}
+            >
               <View
                 style={{
                   height: 8,
@@ -277,19 +306,28 @@ export function AppUpdateChecker() {
                   onPress={() => void browserFallback()}
                 />
                 <View style={{ alignItems: "center" }}>
-                  <Text
+                  <Pressable
                     onPress={dismiss}
                     accessibilityRole="button"
+                    accessibilityLabel="Fechar"
+                    hitSlop={8}
                     style={{
-                      fontFamily: Fonts.bodyMedium,
-                      fontSize: 14,
-                      color: Colors.textMuted,
-                      paddingVertical: 8,
+                      minHeight: 44,
+                      alignItems: "center",
+                      justifyContent: "center",
                       paddingHorizontal: 12,
                     }}
                   >
-                    Fechar
-                  </Text>
+                    <Text
+                      style={{
+                        fontFamily: Fonts.bodyMedium,
+                        fontSize: 14,
+                        color: Colors.textMuted,
+                      }}
+                    >
+                      Fechar
+                    </Text>
+                  </Pressable>
                 </View>
               </>
             ) : null}

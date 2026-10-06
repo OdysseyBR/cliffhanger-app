@@ -266,7 +266,7 @@ export default function HomeScreen() {
   const [library, setLibrary] = useState<LibraryState>(LIB_IDLE);
   const [refreshing, setRefreshing] = useState(false);
 
-  // busca semefeito colateral: devolve o estado e quem chama aplica
+  // busca sem efeito colateral: devolve o estado e quem chama aplica
   const fetchLibrary = useCallback(async (): Promise<LibraryState> => {
     const token = await getIdToken();
     if (!user || !token) {

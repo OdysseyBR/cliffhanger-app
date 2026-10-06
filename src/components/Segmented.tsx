@@ -30,6 +30,8 @@ export function Segmented<T extends string>({ options, value, onChange }: Segmen
           <Pressable
             key={option.value}
             onPress={() => onChange(option.value)}
+            accessibilityRole="button"
+            aria-selected={active}
             style={({ pressed }) => [
               {
                 flex: 1,

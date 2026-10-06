@@ -5,10 +5,11 @@
  */
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 
 import { EmptyState } from "@/components/EmptyState";
-import { ProductGrid } from "@/components/ProductGrid";
+import { ProductCard } from "@/components/ProductCard";
+import { useGridMetrics } from "@/components/ProductGrid";
 import { Loading, Screen } from "@/components/Screen";
 import { Colors, Fonts, Radius, ScreenPadding, useThemeColors } from "@/constants/theme";
 import { CATEGORY_LABELS } from "@/lib/catalog";
@@ -47,6 +48,7 @@ export default function ShopScreen() {
   const { catalog, loading, error, reload } = useCatalog();
   const filter = normalizeFilter(params.filter);
   const [sort, setSort] = useState<Sort>("relevancia");
+  const { columns, cardWidth } = useGridMetrics();
   const selectFilter = (value: Filter) => {
     void router.setParams({ filter: value });
   };
@@ -102,99 +104,120 @@ export default function ShopScreen() {
   const products = catalog?.products ?? [];
 
   return (
-    <Screen
-      onRefresh={async () => {
-        reload();
-      }}
-      refreshing={false}
-    >
-      <View style={{ paddingTop: 16, gap: 12 }}>
-        <View style={{ paddingHorizontal: ScreenPadding, gap: 6 }}>
-          <Text
-            style={{
-              fontFamily: Fonts.display,
-              fontSize: 26,
-              letterSpacing: 1.4,
-              color: Colors.text,
+    <Screen scroll={false}>
+      <FlatList
+        data={visible}
+        key={`colunas-${columns}`}
+        keyExtractor={(item) => item.id}
+        numColumns={columns}
+        columnWrapperStyle={{
+          gap: 12,
+          justifyContent: "center",
+          paddingHorizontal: ScreenPadding,
+        }}
+        renderItem={({ item }) => <ProductCard product={item} width={cardWidth} rating />}
+        ListEmptyComponent={
+          <EmptyState
+            icon="cube-outline"
+            title="Nenhum item nesta categoria."
+            message="Escolha outro filtro acima."
+          />
+        }
+        ListHeaderComponent={
+          <View style={{ gap: 12 }}>
+            <View style={{ paddingHorizontal: ScreenPadding, gap: 6 }}>
+              <Text
+                style={{
+                  fontFamily: Fonts.display,
+                  fontSize: 26,
+                  letterSpacing: 1.4,
+                  color: Colors.text,
+                }}
+              >
+                LOJA
+              </Text>
+              <Text
+                style={{
+                  fontFamily: Fonts.body,
+                  fontSize: 13.5,
+                  lineHeight: 19,
+                  color: Colors.textMuted,
+                }}
+              >
+                Catálogo completo da Cliffhanger — livros, e-books, audiobooks, produtos e
+                colecionáveis.
+              </Text>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingHorizontal: ScreenPadding }}
+            >
+              <Chip label={`Todos (${products.length})`} active={filter === "todos"} onPress={() => selectFilter("todos")} />
+              {categories.map((category) => (
+                <Chip
+                  key={category.value}
+                  label={`${category.label} (${category.count})`}
+                  active={filter === category.value}
+                  onPress={() => selectFilter(category.value)}
+                />
+              ))}
+            </ScrollView>
+
+            <Text
+              style={{
+                paddingHorizontal: ScreenPadding,
+                fontFamily: Fonts.bodyBold,
+                fontSize: 10,
+                letterSpacing: 1.4,
+                textTransform: "uppercase",
+                color: Colors.accent,
+              }}
+            >
+              Ordenar por
+            </Text>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingHorizontal: ScreenPadding }}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <Chip
+                  key={option.value}
+                  label={option.label}
+                  active={sort === option.value}
+                  onPress={() => setSort(option.value)}
+                />
+              ))}
+            </ScrollView>
+
+            <Text
+              style={{
+                paddingHorizontal: ScreenPadding,
+                fontFamily: Fonts.body,
+                fontSize: 12,
+                color: Colors.textFaint,
+              }}
+            >
+              {visible.length} {visible.length === 1 ? "item" : "itens"}
+            </Text>
+          </View>
+        }
+        contentContainerStyle={{ paddingTop: 16, paddingBottom: 32, gap: 12 }}
+        style={{ flex: 1 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={() => {
+              reload();
             }}
-          >
-            LOJA
-          </Text>
-          <Text
-            style={{
-              fontFamily: Fonts.body,
-              fontSize: 13.5,
-              lineHeight: 19,
-              color: Colors.textMuted,
-            }}
-          >
-            Catálogo completo da Cliffhanger — livros, e-books, audiobooks, produtos e
-            colecionáveis.
-          </Text>
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: ScreenPadding }}
-        >
-          <Chip label={`Todos (${products.length})`} active={filter === "todos"} onPress={() => selectFilter("todos")} />
-          {categories.map((category) => (
-            <Chip
-              key={category.value}
-              label={`${category.label} (${category.count})`}
-              active={filter === category.value}
-              onPress={() => selectFilter(category.value)}
-            />
-          ))}
-        </ScrollView>
-
-        <Text
-          style={{
-            paddingHorizontal: ScreenPadding,
-            fontFamily: Fonts.bodyBold,
-            fontSize: 10,
-            letterSpacing: 1.4,
-            textTransform: "uppercase",
-            color: Colors.accent,
-          }}
-        >
-          Ordenar por
-        </Text>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: ScreenPadding }}
-        >
-          {SORT_OPTIONS.map((option) => (
-            <Chip
-              key={option.value}
-              label={option.label}
-              active={sort === option.value}
-              onPress={() => setSort(option.value)}
-            />
-          ))}
-        </ScrollView>
-
-        <Text
-          style={{
-            paddingHorizontal: ScreenPadding,
-            fontFamily: Fonts.body,
-            fontSize: 12,
-            color: Colors.textFaint,
-          }}
-        >
-          {visible.length} {visible.length === 1 ? "item" : "itens"}
-        </Text>
-
-        <ProductGrid
-          products={visible}
-          emptyTitle="Nenhum item nesta categoria."
-          emptyMessage="Escolha outro filtro acima."
-          emptyIcon="cube-outline"
-        />
-      </View>
+            tintColor={Colors.accent}
+            colors={[Colors.accent]}
+          />
+        }
+      />
     </Screen>
   );
 }

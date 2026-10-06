@@ -276,7 +276,7 @@ export default function CartScreen() {
           </Text>
         </View>
 
-        <Button label="Finalizar compra" glow onPress={() => router.push("/checkout")} />
+        <Button label="Finalizar compra" onPress={() => router.push("/checkout")} />
       </View>
     </Screen>
   );

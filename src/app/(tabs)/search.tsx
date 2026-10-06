@@ -106,6 +106,7 @@ export default function SearchScreen() {
             onChangeText={setQuery}
             placeholder="Ex.: valeharts, caneca, helena..."
             placeholderTextColor={Colors.textFaint}
+            accessibilityLabel="Buscar no catálogo"
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="search"
@@ -141,11 +142,6 @@ export default function SearchScreen() {
               justifyContent: "center",
               backgroundColor: Colors.accent,
               opacity: pressed ? 0.85 : 1,
-              shadowColor: Colors.accent,
-              shadowOpacity: 0.45,
-              shadowRadius: 8,
-              shadowOffset: { width: 0, height: 4 },
-              elevation: 6,
             },
           ]}
         >
