@@ -59,11 +59,11 @@ export function buildReaderHtml(url: string, startPage: number): string {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <style>
-  html, body { margin: 0; padding: 0; height: 100%; background: #0c0014; overflow: hidden; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #000000; overflow: hidden; }
   #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
   #stage canvas { max-width: 100%; max-height: 100%; box-shadow: 0 0 24px rgba(0, 0, 0, .6); }
   #status { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-    padding: 24px; text-align: center; color: #fdc500; background: #0c0014;
+    padding: 24px; text-align: center; color: #FFFFFF; background: #000000;
     font: 600 13px/1.5 system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; }
 </style>
 </head>

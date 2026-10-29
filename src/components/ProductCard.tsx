@@ -138,7 +138,7 @@ function ProductCardImpl({ product, width, fill, subtitle, rating = true }: Prod
               justifyContent: "center",
               borderWidth: 1,
               borderColor: Colors.line,
-              backgroundColor: "#0E0000CC",
+              backgroundColor: "#000000CC",
               opacity: pressed ? 0.7 : 1,
             },
           ]}
@@ -167,7 +167,7 @@ function ProductCardImpl({ product, width, fill, subtitle, rating = true }: Prod
                 fontFamily: Fonts.bodyBold,
                 fontSize: 9,
                 letterSpacing: 1.8,
-                color: "#F8FEFF",
+                color: "#FFFFFF",
               }}
             >
               ESGOTADO

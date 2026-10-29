@@ -12,11 +12,12 @@ import Svg, { Circle, Path, Rect } from "react-native-svg";
 import { BookCover } from "@/components/BookCover";
 import type { Product } from "@/lib/types";
 
+/** Fallbacks monocromáticos — quatro tons da paleta P&B (tema da marca). */
 const BRAND_COLORS = [
-  { bg: "#A30707", fg: "#F8FEFF", accent: "#E7CB9B" },
-  { bg: "#0E0000", fg: "#E7CB9B", accent: "#A30707" },
-  { bg: "#E7CB9B", fg: "#0E0000", accent: "#A30707" },
-  { bg: "#F8FEFF", fg: "#A30707", accent: "#0E0000" },
+  { bg: "#000000", fg: "#FFFFFF", accent: "#A3A3A3" },
+  { bg: "#FFFFFF", fg: "#000000", accent: "#525252" },
+  { bg: "#141414", fg: "#FFFFFF", accent: "#FFFFFF" },
+  { bg: "#F2F2F2", fg: "#000000", accent: "#000000" },
 ];
 
 /** Semente estável por produto (mesma fórmula do site). */

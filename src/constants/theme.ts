@@ -1,7 +1,9 @@
 /**
- * Tema oficial Cliffhanger — paleta vencedora da Etapa K (P4):
- * vermelho #A30707 + areia #E7CB9B sobre #0E0000 (escuro, padrão) e a
- * derivação clara (#FBF7F1 com areia escura #96743B p/ contraste).
+ * Tema oficial Cliffhanger — paleta monocromática P&B (mesma identidade
+ * da loja web): preto total #000000 + branco total #FFFFFF, com cinzas
+ * neutros só para superfícies, divisores e texto secundário. O modo
+ * escuro "Preto e Branco" é o padrão; o claro "Branco e Preto" inverte
+ * as áreas escuras → claras.
  *
  * O app nasce escuro; sem "auto". A escolha fica em `cliffhanger:appearance`
  * (AsyncStorage, veja lib/useTheme.tsx). As cores vivas ficam no objeto
@@ -17,13 +19,13 @@ export type ThemeMode = "dark" | "light";
 /** Paleta-base (escuro) — mesma identidade do site. */
 export const Palette = {
   /** fundo principal */
-  bg: "#0E0000",
-  /** cor primária (vermelho da marca) */
-  primary: "#A30707",
+  bg: "#000000",
+  /** cor primária (branco total no modo escuro) */
+  primary: "#FFFFFF",
   /** texto/foreground claro */
-  fg: "#F8FEFF",
-  /** destaque (areia) */
-  accent: "#E7CB9B",
+  fg: "#FFFFFF",
+  /** destaque (mesmo polo do texto — realces são inversões chapadas) */
+  accent: "#FFFFFF",
 } as const;
 
 /** Conjunto completo de cores — as mesmas chaves nos dois modos. */
@@ -44,11 +46,11 @@ export type ThemeColors = {
   textMuted: string;
   /** texto terciário */
   textFaint: string;
-  /** vermelho da marca (CTAs) */
+  /** cor primária (CTAs) */
   primary: string;
-  /** texto sobre o primário (papel) */
+  /** texto sobre o primário (inversão chapada) */
   onPrimary: string;
-  /** destaque areia (ícones, ativos, links) */
+  /** destaque (ícones, ativos, links — mesmo polo do primário) */
   accent: string;
   /** texto sobre o destaque */
   onAccent: string;
@@ -56,38 +58,38 @@ export type ThemeColors = {
   warning: string;
 };
 
-/** Modo escuro oficial — P4 (espelha o tema `theme-default` do site). */
+/** Modo escuro oficial — "Preto e Branco" (espelha o tema `theme-default` do site). */
 const DARK: ThemeColors = {
-  background: "#0E0000",
-  surface: "#210303",
-  surfaceAlt: "#300707",
-  border: "#F8FEFF24", // rgba(248, 254, 255, .14)
-  line: "#F8FEFF1A",
-  text: "#F8FEFF",
-  textMuted: "#D3B7A4",
-  textFaint: "#F8FEFF66",
-  primary: "#A30707",
-  onPrimary: "#F8FEFF",
-  accent: "#E7CB9B",
-  onAccent: "#0E0000",
-  warning: "#E7CB9B",
+  background: "#000000",
+  surface: "#141414",
+  surfaceAlt: "#0d0d0d",
+  border: "#FFFFFF24", // rgba(255, 255, 255, .14)
+  line: "#FFFFFF1A",
+  text: "#FFFFFF",
+  textMuted: "#A3A3A3",
+  textFaint: "#FFFFFF66",
+  primary: "#FFFFFF",
+  onPrimary: "#000000",
+  accent: "#FFFFFF",
+  onAccent: "#000000",
+  warning: "#E5484D",
 };
 
-/** Modo claro oficial — P4 claro (espelha o tema `theme-claro` do site). */
+/** Modo claro oficial — "Branco e Preto" (espelha o tema `theme-claro` do site). */
 const LIGHT: ThemeColors = {
-  background: "#FBF7F1",
+  background: "#FFFFFF",
   surface: "#FFFFFF",
-  surfaceAlt: "#F3E9DC",
-  border: "#17030329", // rgba(23, 3, 3, .16)
-  line: "#1703031A",
-  text: "#170303",
-  textMuted: "#6E5A51",
-  textFaint: "#6E5A5199",
-  primary: "#A30707",
-  onPrimary: "#F8FEFF",
-  accent: "#96743B",
-  onAccent: "#F8FEFF",
-  warning: "#7E0404",
+  surfaceAlt: "#F2F2F2",
+  border: "#00000029", // rgba(0, 0, 0, .16)
+  line: "#0000001A",
+  text: "#000000",
+  textMuted: "#525252",
+  textFaint: "#00000099",
+  primary: "#000000",
+  onPrimary: "#FFFFFF",
+  accent: "#000000",
+  onAccent: "#FFFFFF",
+  warning: "#E5484D",
 };
 
 /**

@@ -47,7 +47,7 @@ async function ensureChannel(): Promise<void> {
       name: "Cliffhanger Store",
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#E7CB9B",
+      lightColor: "#FFFFFF",
     });
   } catch {
     /* canal padrão do sistema segue valendo */

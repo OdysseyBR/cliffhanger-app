@@ -475,10 +475,10 @@ export function ProductReviews({ productId }: ProductReviewsProps) {
                         borderRadius: 10,
                         alignItems: "center",
                         justifyContent: "center",
-                        backgroundColor: "#0E0000E6",
+                        backgroundColor: "#000000E6",
                       }}
                     >
-                      <Ionicons name="close" size={12} color="#F8FEFF" />
+                      <Ionicons name="close" size={12} color="#FFFFFF" />
                     </Pressable>
                   </View>
                 ))}
